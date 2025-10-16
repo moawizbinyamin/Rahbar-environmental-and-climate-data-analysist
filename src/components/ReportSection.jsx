@@ -42,81 +42,33 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
 
   const { analysis, queryType, locations, urgency, timestamp } = analysisData;
 
-  // More Realistic Dynamic Risk Calculation
-  const calculateDynamicRisk = () => {
-    let riskScore = 0;
-    let factors = [];
-
-    // Factor 1: Base risk assessment (35 points max)
-    const baseRiskWeights = {
-      'critical': 32,
-      'high': 24,
-      'medium': 16,
-      'low': 8
-    };
-    const baseRisk = analysis.risk_assessment?.overall_risk_level?.toLowerCase() || 'medium';
-    const baseScore = baseRiskWeights[baseRisk] || 16;
-    riskScore += baseScore;
-    factors.push({ name: 'Risk Assessment', value: baseScore, max: 35 });
-
-    // Factor 2: Urgency/Timeline (20 points max)
-    const urgencyWeights = {
-      'critical': 18,
-      'high': 14,
-      'medium': 9,
-      'low': 4
-    };
-    const urgencyLevel = urgency?.toLowerCase() || 'medium';
-    const urgencyScore = urgencyWeights[urgencyLevel] || 9;
-    riskScore += urgencyScore;
-    factors.push({ name: 'Time Sensitivity', value: urgencyScore, max: 20 });
-
-    // Factor 3: Population exposure (25 points max)
-    let populationScore = 8;
-    if (locations?.[0]?.population_affected) {
-      const popString = locations[0].population_affected.toString().toLowerCase();
-      const numMatch = popString.match(/[\d.]+/);
-      const num = numMatch ? parseFloat(numMatch[0]) : 0;
-      
-      if (popString.includes('million') || popString.includes('m')) {
-        populationScore = Math.min(25, 12 + (num * 3));
-      } else if (popString.includes('thousand') || popString.includes('k')) {
-        populationScore = Math.min(25, 5 + (num / 100));
-      }
-    }
-    riskScore += populationScore;
-    factors.push({ name: 'Population Exposure', value: Math.round(populationScore), max: 25 });
-
-    // Factor 4: Data reliability (inverse - 20 points max)
-    const reliabilityScores = {
-      'high': 3,    // High confidence = low uncertainty
-      'medium': 10,
-      'low': 17     // Low confidence = high uncertainty
-    };
-    const confidence = analysis.risk_assessment?.confidence?.toLowerCase() || 'medium';
-    const reliabilityScore = reliabilityScores[confidence] || 10;
-    riskScore += reliabilityScore;
-    factors.push({ name: 'Data Uncertainty', value: reliabilityScore, max: 20 });
-
-    // Normalize to realistic range (30-85 instead of 0-100)
-    const normalizedScore = Math.min(85, Math.max(30, riskScore));
+  // LLM-Based Risk Assessment (Simplified to 3 levels)
+  const getLLMRiskLevel = () => {
+    // Get risk level directly from LLM's assessment
+    const llmRiskLevel = analysis.risk_assessment?.overall_risk_level?.toLowerCase() || 'medium';
     
-    // Determine risk level from normalized score
-    let calculatedRiskLevel = 'low';
-    if (normalizedScore >= 70) calculatedRiskLevel = 'critical';
-    else if (normalizedScore >= 55) calculatedRiskLevel = 'high';
-    else if (normalizedScore >= 45) calculatedRiskLevel = 'medium';
+    // Map to our 3-level system (high, medium, low)
+    let simplifiedRisk = 'medium';
+    if (llmRiskLevel === 'critical' || llmRiskLevel === 'high') {
+      simplifiedRisk = 'high';
+    } else if (llmRiskLevel === 'medium') {
+      simplifiedRisk = 'medium';
+    } else if (llmRiskLevel === 'low') {
+      simplifiedRisk = 'low';
+    }
+
+    // Get confidence from LLM
+    const confidence = analysis.risk_assessment?.confidence || 'Medium';
 
     return {
-      percentage: Math.round(normalizedScore),
-      level: calculatedRiskLevel,
-      factors: factors,
-      breakdown: `${Math.round(riskScore)}/100 points`,
-      rawScore: riskScore
+      level: simplifiedRisk,
+      confidence: confidence,
+      llmOriginalLevel: llmRiskLevel,
+      explanation: analysis.risk_assessment?.explanation || 'Risk assessment based on environmental and climate data analysis'
     };
   };
 
-  const dynamicRisk = calculateDynamicRisk();
+  const dynamicRisk = getLLMRiskLevel();
 
   const getRiskColor = (riskLevel) => {
     const level = riskLevel?.toLowerCase();
@@ -131,9 +83,9 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
 
   const getRiskIcon = (riskLevel) => {
     const level = riskLevel?.toLowerCase();
-    if (level === 'critical' || level === 'high') return <AlertTriangle className="w-5 h-5" />;
-    if (level === 'low') return <CheckCircle className="w-5 h-5" />;
-    return <Info className="w-5 h-5" />;
+    if (level === 'critical' || level === 'high') return <AlertTriangle className="w-6 h-6 text-white" />;
+    if (level === 'low') return <CheckCircle className="w-6 h-6 text-white" />;
+    return <Info className="w-6 h-6 text-white" />; // medium
   };
 
   const riskColors = getRiskColor(analysis.risk_assessment?.overall_risk_level);
@@ -179,13 +131,18 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
             </div>
           </div>
           
-          {/* Overall Risk Badge - Dynamic */}
-          <div className={`px-4 py-2 rounded-lg border-2 ${getRiskColor(dynamicRisk.level).bg} ${getRiskColor(dynamicRisk.level).text} ${getRiskColor(dynamicRisk.level).border} flex items-center gap-2`}>
-            {getRiskIcon(dynamicRisk.level)}
+          {/* Overall Risk Badge - LLM-Based */}
+          <div className={`px-4 py-3 rounded-lg border-2 ${getRiskColor(dynamicRisk.level).bg} ${getRiskColor(dynamicRisk.level).text} ${getRiskColor(dynamicRisk.level).border} flex items-center gap-3`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              dynamicRisk.level === 'high' ? 'bg-red-500' :
+              dynamicRisk.level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+            }`}>
+              {getRiskIcon(dynamicRisk.level)}
+            </div>
             <div>
-              <p className="text-xs font-medium opacity-80">Risk Score</p>
-              <p className="text-lg font-bold">{dynamicRisk.percentage}%</p>
-              <p className="text-xs font-medium uppercase">{dynamicRisk.level}</p>
+              <p className="text-xs font-medium opacity-80">AI Assessment</p>
+              <p className="text-2xl font-bold uppercase">{dynamicRisk.level}</p>
+              <p className="text-xs opacity-70">{dynamicRisk.confidence} confidence</p>
             </div>
           </div>
         </div>
@@ -226,79 +183,68 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
               darkMode ? 'text-gray-200' : 'text-gray-800'
             }`}>
               <BarChart3 className="w-4 h-4" />
-              Dynamic Risk Calculation
+              AI Risk Assessment
             </h4>
             
-            {/* Overall Risk Score */}
-            <div className={`p-5 rounded-lg border-2 mb-4 ${getRiskColor(dynamicRisk.level).bg} ${getRiskColor(dynamicRisk.level).border}`}>
-              <div className="flex items-center justify-between mb-3">
+            {/* LLM-Based Risk Level */}
+            <div className={`p-6 rounded-xl border-2 mb-4 ${getRiskColor(dynamicRisk.level).bg} ${getRiskColor(dynamicRisk.level).border}`}>
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className={`text-xs font-medium opacity-80 ${getRiskColor(dynamicRisk.level).text}`}>
-                    Calculated Risk Score
+                  <p className={`text-xs font-medium uppercase tracking-wide mb-2 ${getRiskColor(dynamicRisk.level).text} opacity-80`}>
+                    Risk Level
                   </p>
-                  <p className={`text-4xl font-bold ${getRiskColor(dynamicRisk.level).text}`}>
-                    {dynamicRisk.percentage}%
-                  </p>
-                  <p className={`text-sm font-semibold uppercase mt-1 ${getRiskColor(dynamicRisk.level).text}`}>
-                    {dynamicRisk.level} Risk
+                  <p className={`text-5xl font-bold ${getRiskColor(dynamicRisk.level).text}`}>
+                    {dynamicRisk.level.toUpperCase()}
                   </p>
                 </div>
-                <div className="text-right">
-                  {getRiskIcon(dynamicRisk.level)}
-                  <p className={`text-xs mt-2 ${
-                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                <div className="text-center">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                    dynamicRisk.level === 'high' ? 'bg-red-500' :
+                    dynamicRisk.level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                   }`}>
-                    {dynamicRisk.breakdown}
-                  </p>
+                    {getRiskIcon(dynamicRisk.level)}
+                  </div>
                 </div>
               </div>
               
-              {/* Overall Progress Bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 mb-3">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${dynamicRisk.percentage}%` }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className={`h-3 rounded-full ${
-                    dynamicRisk.level === 'critical' ? 'bg-red-500' :
-                    dynamicRisk.level === 'high' ? 'bg-orange-500' :
-                    dynamicRisk.level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                  }`}
-                />
-              </div>
-
-              {/* Risk Factor Breakdown */}
-              <div className="space-y-2 mt-4">
-                <p className={`text-xs font-semibold mb-2 ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Contributing Factors:
-                </p>
-                {dynamicRisk.factors.map((factor, index) => (
-                  <div key={index} className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs ${
-                        darkMode ? 'text-gray-400' : 'text-gray-600'
-                      }`}>
-                        {factor.name}
-                      </span>
-                      <span className={`text-xs font-bold ${
-                        darkMode ? 'text-gray-300' : 'text-gray-700'
-                      }`}>
-                        {factor.value}/{factor.max}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(factor.value / factor.max) * 100}%` }}
-                        transition={{ duration: 1, delay: 0.3 + index * 0.1 }}
-                        className="bg-earth-500 h-1.5 rounded-full"
-                      />
-                    </div>
+              {/* Confidence Badge */}
+              <div className="flex items-center justify-between pt-4 border-t border-opacity-30"
+                style={{ borderColor: 'currentColor' }}
+              >
+                <div>
+                  <p className={`text-xs font-medium ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    AI Confidence
+                  </p>
+                  <p className={`text-sm font-bold ${
+                    darkMode ? 'text-gray-200' : 'text-gray-800'
+                  }`}>
+                    {dynamicRisk.confidence}
+                  </p>
+                </div>
+                
+                {dynamicRisk.llmOriginalLevel !== dynamicRisk.level && (
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                  }`}>
+                    Original: {dynamicRisk.llmOriginalLevel}
                   </div>
-                ))}
+                )}
               </div>
+              
+              {/* Explanation */}
+              {dynamicRisk.explanation && (
+                <div className={`mt-4 pt-4 border-t ${
+                  darkMode ? 'border-gray-600' : 'border-gray-300'
+                } border-opacity-30`}>
+                  <p className={`text-xs leading-relaxed ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    {dynamicRisk.explanation}
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
 
