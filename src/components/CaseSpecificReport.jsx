@@ -25,12 +25,36 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
     return null;
   }
 
-  const { queryType } = analysisData;
+  const { queryType, analysis } = analysisData;
+
+  // Extract case-specific data from LLM response
+  const getCaseData = () => {
+    // Get case-specific metrics from LLM analysis
+    const caseMetrics = analysis.case_specific_metrics || {};
+    const environmentalFactors = analysis.environmental_factors || {};
+    const projections = analysis.projections || {};
+    
+    return {
+      metrics: caseMetrics,
+      factors: environmentalFactors,
+      projections: projections
+    };
+  };
+
+  const caseData = getCaseData();
 
   // Case-specific metrics and visualizations
   const renderCaseSpecificMetrics = () => {
     switch (queryType) {
       case 'flood_analysis':
+        // Get flood-specific data from LLM
+        const floodData = caseData.metrics.flood || caseData.factors.flood || {};
+        const waterLevel = floodData.water_level_rise || floodData.water_level || '1.5-3.0m';
+        const rainfall = floodData.rainfall || floodData.expected_rainfall || '60-120mm';
+        const drainage = floodData.drainage_capacity || floodData.drainage || '55-65%';
+        const evacuation = floodData.evacuation_time || floodData.evacuation_window || '4-8hrs';
+        const season = floodData.season || floodData.time_period || 'monsoon season (July-September)';
+        
         return (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -51,7 +75,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
               <p className={`text-xs italic ${
                 darkMode ? 'text-blue-300' : 'text-blue-700'
               }`}>
-                Expected conditions during monsoon season (July-September)
+                Expected conditions during {season}
               </p>
             </div>
             
@@ -62,7 +86,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Water Level Rise
                 </p>
-                <p className="text-xl font-bold text-blue-600">1.5-3.0m</p>
+                <p className="text-xl font-bold text-blue-600">{waterLevel}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Typical range
                 </p>
@@ -74,7 +98,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Expected Rainfall
                 </p>
-                <p className="text-xl font-bold text-blue-600">60-120mm</p>
+                <p className="text-xl font-bold text-blue-600">{rainfall}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Per event
                 </p>
@@ -86,7 +110,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Drainage Capacity
                 </p>
-                <p className="text-xl font-bold text-orange-600">55-65%</p>
+                <p className="text-xl font-bold text-orange-600">{drainage}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Current infrastructure
                 </p>
@@ -98,7 +122,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Evacuation Window
                 </p>
-                <p className="text-xl font-bold text-red-600">4-8hrs</p>
+                <p className="text-xl font-bold text-red-600">{evacuation}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Safe response time
                 </p>
@@ -108,6 +132,14 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
         );
 
       case 'urban_expansion':
+        // Get urban expansion data from LLM
+        const urbanData = caseData.metrics.urban || caseData.factors.urban_expansion || {};
+        const growthRate = urbanData.growth_rate || urbanData.annual_growth || '10-14%';
+        const newDevelopment = urbanData.new_development || urbanData.expansion_area || '120-170km²';
+        const populationDensity = urbanData.population_density || urbanData.density || '7.5-9.5K/km²';
+        const greenLoss = urbanData.green_space_loss || urbanData.environmental_impact || '-15-22%';
+        const context = urbanData.context || 'current development patterns';
+        
         return (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -128,7 +160,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
               <p className={`text-xs italic ${
                 darkMode ? 'text-purple-300' : 'text-purple-700'
               }`}>
-                Projected trends based on current development patterns
+                Projected trends based on {context}
               </p>
             </div>
             
@@ -139,7 +171,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Annual Growth Rate
                 </p>
-                <p className="text-xl font-bold text-purple-600">10-14%</p>
+                <p className="text-xl font-bold text-purple-600">{growthRate}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Historical average
                 </p>
@@ -151,7 +183,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   New Development
                 </p>
-                <p className="text-xl font-bold text-purple-600">120-170km²</p>
+                <p className="text-xl font-bold text-purple-600">{newDevelopment}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Annual expansion
                 </p>
@@ -163,7 +195,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Population Density
                 </p>
-                <p className="text-xl font-bold text-blue-600">7.5-9.5K/km²</p>
+                <p className="text-xl font-bold text-blue-600">{populationDensity}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Urban core areas
                 </p>
@@ -175,7 +207,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Green Space Impact
                 </p>
-                <p className="text-xl font-bold text-orange-600">-15-22%</p>
+                <p className="text-xl font-bold text-orange-600">{greenLoss}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Expected loss
                 </p>
@@ -185,6 +217,14 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
         );
 
       case 'deforestation':
+        // Get deforestation data from LLM
+        const forestData = caseData.metrics.deforestation || caseData.factors.forest || {};
+        const forestLoss = forestData.annual_loss || forestData.forest_loss || '700-950km²';
+        const coverage = forestData.coverage || forestData.current_coverage || '38-45%';
+        const carbonImpact = forestData.carbon_impact || forestData.co2_emissions || '1.8-2.5M tons';
+        const speciesRisk = forestData.species_affected || forestData.biodiversity_impact || '140-170';
+        const timePeriod = forestData.time_period || forestData.analysis_period || '2015-2025';
+        
         return (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -205,7 +245,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
               <p className={`text-xs italic ${
                 darkMode ? 'text-green-300' : 'text-green-700'
               }`}>
-                Historical trends and projected impacts (2015-2025)
+                Historical trends and projected impacts ({timePeriod})
               </p>
             </div>
             
@@ -216,7 +256,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Annual Forest Loss
                 </p>
-                <p className="text-xl font-bold text-red-600">700-950km²</p>
+                <p className="text-xl font-bold text-red-600">{forestLoss}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Per year
                 </p>
@@ -228,7 +268,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Current Coverage
                 </p>
-                <p className="text-xl font-bold text-green-600">38-45%</p>
+                <p className="text-xl font-bold text-green-600">{coverage}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Of total area
                 </p>
@@ -240,7 +280,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Carbon Impact
                 </p>
-                <p className="text-xl font-bold text-yellow-600">1.8-2.5M tons</p>
+                <p className="text-xl font-bold text-yellow-600">{carbonImpact}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   CO₂ released annually
                 </p>
@@ -252,7 +292,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Species at Risk
                 </p>
-                <p className="text-xl font-bold text-orange-600">140-170</p>
+                <p className="text-xl font-bold text-orange-600">{speciesRisk}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Threatened species
                 </p>
@@ -262,6 +302,14 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
         );
 
       case 'air_pollution':
+        // Get air pollution data from LLM
+        const airData = caseData.metrics.air_pollution || caseData.factors.air_quality || {};
+        const aqiRange = airData.aqi || airData.aqi_range || '200-300';
+        const pm25 = airData.pm25 || airData.pm25_levels || '150-220 µg/m³';
+        const visibility = airData.visibility || airData.visibility_range || '1.5-3.5 km';
+        const healthImpact = airData.health_impact || airData.health_risk || 'High-Severe';
+        const airSeason = airData.season || airData.time_period || 'winter season (November-February)';
+        
         return (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -282,7 +330,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
               <p className={`text-xs italic ${
                 darkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Typical conditions during winter season (November-February)
+                Typical conditions during {airSeason}
               </p>
             </div>
             
@@ -293,7 +341,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   AQI Range
                 </p>
-                <p className="text-xl font-bold text-red-600">200-300</p>
+                <p className="text-xl font-bold text-red-600">{aqiRange}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Unhealthy to Hazardous
                 </p>
@@ -305,7 +353,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   PM2.5 Levels
                 </p>
-                <p className="text-xl font-bold text-orange-600">150-220 µg/m³</p>
+                <p className="text-xl font-bold text-orange-600">{pm25}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Peak season average
                 </p>
@@ -317,7 +365,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Visibility Range
                 </p>
-                <p className="text-xl font-bold text-yellow-600">1.5-3.5 km</p>
+                <p className="text-xl font-bold text-yellow-600">{visibility}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   During smog episodes
                 </p>
@@ -329,7 +377,7 @@ const CaseSpecificReport = ({ analysisData, darkMode = false }) => {
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Health Impact
                 </p>
-                <p className="text-xl font-bold text-red-600">High-Severe</p>
+                <p className="text-xl font-bold text-red-600">{healthImpact}</p>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   Sensitive groups affected
                 </p>

@@ -328,13 +328,15 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
                   </p>
                   
                   {(() => {
-                    // Calculate total affected population across all locations
+                    // Calculate total affected population from LLM data across all locations
                     let totalAffected = 0;
                     
                     analysis.location_specific_insights.forEach((insight) => {
-                      const affectedPop = parseFloat(insight.affected_population?.toString().match(/[\d.]+/)?.[0] || 0);
-                      const affectedMultiplier = insight.affected_population?.toLowerCase().includes('million') ? 1000000 :
-                                                insight.affected_population?.toLowerCase().includes('thousand') ? 1000 : 1;
+                      // Get population from LLM response
+                      const affectedPopStr = insight.affected_population || insight.population_at_risk || insight.population_affected || '0';
+                      const affectedPop = parseFloat(affectedPopStr.toString().match(/[\d.]+/)?.[0] || 0);
+                      const affectedMultiplier = affectedPopStr.toString().toLowerCase().includes('million') || affectedPopStr.toString().toLowerCase().includes('m') ? 1000000 :
+                                                affectedPopStr.toString().toLowerCase().includes('thousand') || affectedPopStr.toString().toLowerCase().includes('k') ? 1000 : 1;
                       totalAffected += affectedPop * affectedMultiplier;
                     });
 
