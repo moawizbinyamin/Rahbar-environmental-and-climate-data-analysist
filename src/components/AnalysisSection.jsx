@@ -26,7 +26,7 @@ const AnalysisSection = ({
             darkMode ? 'bg-gray-800' : 'bg-gray-100'
           }`}>
             {[
-              ...(showChat ? [{ id: 'chat', label: 'Chat', icon: Brain }] : []),
+              { id: 'chat', label: 'Chat', icon: Brain },
               { id: 'map', label: 'Map', icon: Map },
               { id: 'insights', label: 'Insights', icon: BarChart3 }
             ].map((tab) => (
@@ -103,20 +103,20 @@ const AnalysisSection = ({
       {/* Mobile Layout */}
       <div className="lg:hidden flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
-          {showChat && activeTab === 'chat' && (
+          {activeTab === 'chat' && (
             <motion.div
               key="chat"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="h-full p-4"
+              className="h-full p-2 sm:p-4"
             >
               <ChatInterface 
                 onAnalysisComplete={onAnalysisComplete}
                 onProcessingStart={onProcessingStart}
                 darkMode={darkMode}
-                collapsed={chatCollapsed}
+                collapsed={false}
                 onToggleCollapse={onToggleChatCollapse}
               />
             </motion.div>
@@ -129,7 +129,7 @@ const AnalysisSection = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.3 }}
-              className="h-full p-4"
+              className="h-full p-2 sm:p-4"
             >
               <MapVisualization 
                 analysisData={currentAnalysis}
@@ -146,7 +146,7 @@ const AnalysisSection = ({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
-              className="h-full p-4"
+              className="h-full p-2 sm:p-4"
             >
               <InsightPanel 
                 analysisData={currentAnalysis}
@@ -156,25 +156,6 @@ const AnalysisSection = ({
             </motion.div>
           )}
         </AnimatePresence>
-        
-        {/* Floating Chat Button for Mobile */}
-        {chatCollapsed && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onToggleChatCollapse}
-            className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-lg transition-colors duration-300 ${
-              darkMode 
-                ? 'bg-earth-500 hover:bg-earth-600 text-white' 
-                : 'bg-earth-500 hover:bg-earth-600 text-white'
-            }`}
-          >
-            <Brain className="w-6 h-6" />
-          </motion.button>
-        )}
       </div>
     </section>
   );

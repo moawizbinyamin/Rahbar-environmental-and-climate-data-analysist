@@ -232,7 +232,7 @@ function App() {
               setActiveTab={setActiveTab}
               onAnalysisComplete={handleAnalysisComplete}
               onProcessingStart={handleProcessingStart}
-              showChat={false}
+              showChat={true}
               chatCollapsed={chatCollapsed}
               onToggleChatCollapse={() => setChatCollapsed(!chatCollapsed)}
             />
