@@ -3,12 +3,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD-ZQ94VQM3QDGRZJuHl3wU2H_0F4JxfoM",
-  authDomain: "rahbar-dcd4a.firebaseapp.com",
-  projectId: "rahbar-dcd4a",
-  storageBucket: "rahbar-dcd4a.firebasestorage.app",
-  messagingSenderId: "864346139791",
-  appId: "1:864346139791:web:4da0b26bfc6910b40d14fa"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
