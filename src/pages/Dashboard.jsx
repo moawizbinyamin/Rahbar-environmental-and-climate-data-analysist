@@ -18,8 +18,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('map');
   const [chatCollapsed, setChatCollapsed] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [chatButtonPosition, setChatButtonPosition] = useState({ x: 0, y: 0 });
-  const chatButtonRef = React.useRef(null);
+  const [showChatPrompt, setShowChatPrompt] = useState(true);
 
   const handleAnalysisComplete = (analysisData) => {
     setCurrentAnalysis(analysisData);
@@ -42,6 +41,15 @@ const Dashboard = () => {
       alert('Failed to logout. Please try again.');
     }
   };
+
+  // Auto-hide chat prompt after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowChatPrompt(false);
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -336,52 +344,72 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden relative">
-        {/* Chat Dropdown Button - Draggable with Viewport Constraints */}
-        <motion.div
-          ref={chatButtonRef}
-          drag
-          dragMomentum={false}
-          dragElastic={0}
-          dragConstraints={{
-            top: -window.innerHeight + 200,
-            left: -window.innerWidth + 100,
-            right: window.innerWidth - 100,
-            bottom: window.innerHeight - 200,
-          }}
-          initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
-          animate={{ x: chatButtonPosition.x, y: chatButtonPosition.y, scale: 1, opacity: 1 }}
-          onDragEnd={(event, info) => {
-            setChatButtonPosition({ x: info.offset.x, y: info.offset.y });
-          }}
-          className="fixed top-20 right-6 z-50"
-          style={{ 
-            cursor: 'grab',
-            touchAction: 'none'
-          }}
-          whileHover={{ scale: 1.05 }}
-          whileDrag={{ 
-            scale: 1.1,
-            cursor: 'grabbing',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
-          }}
-        >
-          <motion.button
-            onClick={(e) => {
-              // Only open chat if not dragging
-              if (e.target === e.currentTarget || e.target.closest('button') === e.currentTarget) {
-                setChatCollapsed(!chatCollapsed);
-              }
+        {/* Chat Button - Fixed Bottom Right with Prompt */}
+        <div className="fixed bottom-6 right-6 z-50 flex items-end gap-3">
+          {/* Animated Prompt Message */}
+          <AnimatePresence>
+            {showChatPrompt && chatCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 20, scale: 0.8 }}
+                transition={{ type: "spring", duration: 0.6 }}
+                className={`px-4 py-3 rounded-lg shadow-lg max-w-xs ${
+                  darkMode 
+                    ? 'bg-gray-800 border border-gray-700 text-white' 
+                    : 'bg-white border border-gray-200 text-gray-800'
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  <Brain className="w-5 h-5 text-earth-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium mb-1">Hi! I'm Rahbar Assistant 👋</p>
+                    <p className="text-xs opacity-80">
+                      Click here to ask me about climate risks, floods, or environmental data!
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowChatPrompt(false)}
+                    className="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    ×
+                  </button>
+                </div>
+                {/* Arrow pointing to button */}
+                <div className={`absolute -right-2 bottom-6 w-4 h-4 rotate-45 ${
+                  darkMode ? 'bg-gray-800 border-r border-b border-gray-700' : 'bg-white border-r border-b border-gray-200'
+                }`} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Chat Button */}
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              setChatCollapsed(!chatCollapsed);
+              setShowChatPrompt(false);
             }}
-            className={`p-4 rounded-full shadow-lg transition-colors duration-300 ${
-              darkMode 
-                ? 'bg-earth-500 hover:bg-earth-600 text-white' 
-                : 'bg-earth-500 hover:bg-earth-600 text-white'
-            }`}
-            title="Drag to reposition • Click to open/close chat"
+            className={`p-4 rounded-full shadow-2xl transition-all duration-300 ${
+            darkMode 
+                ? 'bg-earth-500 hover:bg-earth-600 text-white ring-4 ring-earth-500/20' 
+                : 'bg-earth-500 hover:bg-earth-600 text-white ring-4 ring-earth-500/20'
+          }`}
+          title={chatCollapsed ? "Open Chat" : "Close Chat"}
           >
-            <Brain className="w-6 h-6" />
-          </motion.button>
-        </motion.div>
+            <motion.div
+              animate={{ 
+                rotate: chatCollapsed ? 0 : 180,
+              }}
+              transition={{ duration: 0.3 }}
+        >
+          <Brain className="w-6 h-6" />
+            </motion.div>
+        </motion.button>
+        </div>
 
         {/* Chat Dropdown - Fixed Position (Always mounted, just hidden) */}
             <motion.div
