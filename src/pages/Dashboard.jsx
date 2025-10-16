@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [chatCollapsed, setChatCollapsed] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [chatButtonPosition, setChatButtonPosition] = useState({ x: 0, y: 0 });
+  const chatButtonRef = React.useRef(null);
 
   const handleAnalysisComplete = (analysisData) => {
     setCurrentAnalysis(analysisData);
@@ -335,37 +336,51 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden relative">
-        {/* Chat Dropdown Button - Draggable */}
+        {/* Chat Dropdown Button - Draggable with Viewport Constraints */}
         <motion.div
+          ref={chatButtonRef}
           drag
           dragMomentum={false}
-          dragElastic={0.1}
+          dragElastic={0}
           dragConstraints={{
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            top: -window.innerHeight + 200,
+            left: -window.innerWidth + 100,
+            right: window.innerWidth - 100,
+            bottom: window.innerHeight - 200,
           }}
           initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
           animate={{ x: chatButtonPosition.x, y: chatButtonPosition.y, scale: 1, opacity: 1 }}
           onDragEnd={(event, info) => {
             setChatButtonPosition({ x: info.offset.x, y: info.offset.y });
           }}
-          className="fixed top-20 right-6 z-50 cursor-move"
+          className="fixed top-20 right-6 z-50"
+          style={{ 
+            cursor: 'grab',
+            touchAction: 'none'
+          }}
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileDrag={{ 
+            scale: 1.1,
+            cursor: 'grabbing',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+          }}
         >
           <motion.button
-          onClick={() => setChatCollapsed(!chatCollapsed)}
+            onClick={(e) => {
+              // Only open chat if not dragging
+              if (e.target === e.currentTarget || e.target.closest('button') === e.currentTarget) {
+                setChatCollapsed(!chatCollapsed);
+              }
+            }}
             className={`p-4 rounded-full shadow-lg transition-colors duration-300 ${
-            darkMode 
-              ? 'bg-earth-500 hover:bg-earth-600 text-white' 
-              : 'bg-earth-500 hover:bg-earth-600 text-white'
-          }`}
-            title={chatCollapsed ? "Open Chat (Draggable)" : "Close Chat (Draggable)"}
-        >
-          <Brain className="w-6 h-6" />
-        </motion.button>
+              darkMode 
+                ? 'bg-earth-500 hover:bg-earth-600 text-white' 
+                : 'bg-earth-500 hover:bg-earth-600 text-white'
+            }`}
+            title="Drag to reposition • Click to open/close chat"
+          >
+            <Brain className="w-6 h-6" />
+          </motion.button>
         </motion.div>
 
         {/* Chat Dropdown - Fixed Position (Always mounted, just hidden) */}
