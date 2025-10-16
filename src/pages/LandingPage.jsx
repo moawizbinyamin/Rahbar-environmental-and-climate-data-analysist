@@ -86,7 +86,83 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Animated Background */}
+        <div className="absolute inset-0 z-0">
+          {/* Gradient Orbs */}
+          <motion.div
+            animate={{
+              x: [0, 100, 0],
+              y: [0, -100, 0],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-20 left-10 w-96 h-96 bg-earth-300/20 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, -100, 0],
+              y: [0, 100, 0],
+              scale: [1, 1.3, 1],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-40 right-20 w-96 h-96 bg-sky-300/20 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, 50, 0],
+              y: [0, -50, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute bottom-20 left-1/4 w-80 h-80 bg-green-300/20 rounded-full blur-3xl"
+          />
+          
+          {/* Floating Icons */}
+          {[
+            { Icon: Cloud, delay: 0, x: '10%', y: '20%' },
+            { Icon: Leaf, delay: 2, x: '80%', y: '30%' },
+            { Icon: AlertTriangle, delay: 1, x: '20%', y: '70%' },
+            { Icon: Map, delay: 3, x: '70%', y: '60%' },
+            { Icon: BarChart3, delay: 1.5, x: '90%', y: '80%' },
+          ].map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{
+                opacity: [0.1, 0.3, 0.1],
+                y: [0, -30, 0],
+                rotate: [0, 10, 0]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                delay: item.delay,
+                ease: "easeInOut"
+              }}
+              className="absolute"
+              style={{ left: item.x, top: item.y }}
+            >
+              <item.Icon className="w-16 h-16 text-earth-400/30" />
+            </motion.div>
+          ))}
+          
+          {/* Grid Pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:64px_64px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -129,14 +205,56 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="mt-16"
+              className="mt-16 relative"
             >
-              <div className="bg-white rounded-2xl shadow-2xl p-4 max-w-4xl mx-auto">
-                <div className="bg-gradient-to-br from-earth-100 to-sky-100 rounded-lg h-96 flex items-center justify-center">
-                  <div className="text-center">
-                    <Globe className="w-32 h-32 text-earth-500 mx-auto mb-4 animate-pulse" />
-                    <p className="text-gray-600 text-lg">Interactive Climate Dashboard</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-4 max-w-4xl mx-auto border border-white/20">
+                <div className="bg-gradient-to-br from-earth-100 via-sky-50 to-green-100 rounded-lg h-96 flex items-center justify-center relative overflow-hidden">
+                  {/* Animated Globe */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <Globe className="w-64 h-64 text-earth-500/20" strokeWidth={0.5} />
+                  </motion.div>
+                  
+                  {/* Central Content */}
+                  <div className="text-center relative z-10">
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 5, -5, 0]
+                      }}
+                      transition={{ 
+                        duration: 6, 
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <Globe className="w-32 h-32 text-earth-500 mx-auto mb-4" />
+                    </motion.div>
+                    <p className="text-gray-700 text-lg font-medium">Interactive Climate Dashboard</p>
+                    <p className="text-gray-500 text-sm mt-2">Real-time data • AI Analysis • Interactive Maps</p>
                   </div>
+                  
+                  {/* Data Points */}
+                  {[
+                    { Icon: Cloud, label: 'Weather', color: 'text-sky-500', position: 'top-8 left-8' },
+                    { Icon: AlertTriangle, label: 'Risks', color: 'text-red-500', position: 'top-8 right-8' },
+                    { Icon: Leaf, label: 'Green', color: 'text-green-500', position: 'bottom-8 left-8' },
+                    { Icon: BarChart3, label: 'Analytics', color: 'text-purple-500', position: 'bottom-8 right-8' }
+                  ].map((item, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5 + index * 0.2, duration: 0.5 }}
+                      className={`absolute ${item.position} bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg`}
+                    >
+                      <item.Icon className={`w-6 h-6 ${item.color} mb-1`} />
+                      <p className="text-xs font-medium text-gray-700">{item.label}</p>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </motion.div>
