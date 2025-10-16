@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import { motion } from 'framer-motion';
-import { MapPin, AlertTriangle, Layers, Users } from 'lucide-react';
+import { MapPin, AlertTriangle, Layers, Users, Maximize2, Minimize2 } from 'lucide-react';
 import L from 'leaflet';
 
 // Fix for default markers in react-leaflet
@@ -28,6 +28,7 @@ const EnhancedMapVisualization = ({ analysisData, isLoading, darkMode = false })
   const [mapCenter, setMapCenter] = useState([31.5204, 74.3587]); // Default to Lahore
   const [mapZoom, setMapZoom] = useState(10);
   const [showAreas, setShowAreas] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (analysisData && analysisData.mapVisualization) {
@@ -134,7 +135,7 @@ const EnhancedMapVisualization = ({ analysisData, isLoading, darkMode = false })
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`h-full rounded-2xl shadow-xl overflow-hidden ${
+      className={`${isFullscreen ? 'fixed inset-0 z-[200]' : 'h-full'} rounded-2xl shadow-xl overflow-hidden ${
         darkMode ? 'bg-gray-800/90' : 'bg-white/90'
       }`}
     >
@@ -158,26 +159,40 @@ const EnhancedMapVisualization = ({ analysisData, isLoading, darkMode = false })
               </p>
             )}
           </div>
-          <button
-            onClick={() => setShowAreas(!showAreas)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              showAreas 
-                ? darkMode 
-                  ? 'bg-earth-500 text-white hover:bg-earth-600' 
-                  : 'bg-earth-500 text-white hover:bg-earth-600'
-                : darkMode
-                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAreas(!showAreas)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                showAreas 
+                  ? darkMode 
+                    ? 'bg-earth-500 text-white hover:bg-earth-600' 
+                    : 'bg-earth-500 text-white hover:bg-earth-600'
+                  : darkMode
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              {showAreas ? 'Hide' : 'Show'}
+            </button>
+            
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                darkMode 
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            {showAreas ? 'Hide Coverage' : 'Show Coverage'}
-          </button>
+              }`}
+              title={isFullscreen ? "Exit Fullscreen" : "View Fullscreen"}
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Map Container */}
-      <div className="h-[calc(100%-5rem)]">
+      <div className={isFullscreen ? "h-[calc(100vh-10rem)]" : "h-[500px]"}>
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}

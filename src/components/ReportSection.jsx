@@ -41,68 +41,77 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
 
   const { analysis, queryType, locations, urgency, timestamp } = analysisData;
 
-  // Dynamic Risk Calculation based on multiple factors
+  // More Realistic Dynamic Risk Calculation
   const calculateDynamicRisk = () => {
     let riskScore = 0;
     let factors = [];
 
-    // Factor 1: Base risk level from LLM (40% weight)
+    // Factor 1: Base risk assessment (35 points max)
     const baseRiskWeights = {
-      'critical': 40,
-      'high': 30,
-      'medium': 20,
-      'low': 10
+      'critical': 32,
+      'high': 24,
+      'medium': 16,
+      'low': 8
     };
     const baseRisk = analysis.risk_assessment?.overall_risk_level?.toLowerCase() || 'medium';
-    riskScore += baseRiskWeights[baseRisk] || 20;
-    factors.push({ name: 'Base Assessment', value: baseRiskWeights[baseRisk] || 20, max: 40 });
+    const baseScore = baseRiskWeights[baseRisk] || 16;
+    riskScore += baseScore;
+    factors.push({ name: 'Risk Assessment', value: baseScore, max: 35 });
 
-    // Factor 2: Urgency level (25% weight)
+    // Factor 2: Urgency/Timeline (20 points max)
     const urgencyWeights = {
-      'critical': 25,
-      'high': 20,
-      'medium': 12,
-      'low': 5
+      'critical': 18,
+      'high': 14,
+      'medium': 9,
+      'low': 4
     };
     const urgencyLevel = urgency?.toLowerCase() || 'medium';
-    riskScore += urgencyWeights[urgencyLevel] || 12;
-    factors.push({ name: 'Urgency', value: urgencyWeights[urgencyLevel] || 12, max: 25 });
+    const urgencyScore = urgencyWeights[urgencyLevel] || 9;
+    riskScore += urgencyScore;
+    factors.push({ name: 'Time Sensitivity', value: urgencyScore, max: 20 });
 
-    // Factor 3: Population impact (20% weight)
-    let populationScore = 10;
+    // Factor 3: Population exposure (25 points max)
+    let populationScore = 8;
     if (locations?.[0]?.population_affected) {
-      const popString = locations[0].population_affected.toString();
-      if (popString.includes('million') || popString.includes('M')) populationScore = 20;
-      else if (popString.includes('thousand') || popString.includes('K')) populationScore = 15;
-      else if (parseInt(popString.replace(/,/g, '')) > 100000) populationScore = 18;
+      const popString = locations[0].population_affected.toString().toLowerCase();
+      const numMatch = popString.match(/[\d.]+/);
+      const num = numMatch ? parseFloat(numMatch[0]) : 0;
+      
+      if (popString.includes('million') || popString.includes('m')) {
+        populationScore = Math.min(25, 12 + (num * 3));
+      } else if (popString.includes('thousand') || popString.includes('k')) {
+        populationScore = Math.min(25, 5 + (num / 100));
+      }
     }
     riskScore += populationScore;
-    factors.push({ name: 'Population Impact', value: populationScore, max: 20 });
+    factors.push({ name: 'Population Exposure', value: Math.round(populationScore), max: 25 });
 
-    // Factor 4: Confidence (inverse - 15% weight)
-    const confidenceWeights = {
-      'high': 5,
+    // Factor 4: Data reliability (inverse - 20 points max)
+    const reliabilityScores = {
+      'high': 3,    // High confidence = low uncertainty
       'medium': 10,
-      'low': 15
+      'low': 17     // Low confidence = high uncertainty
     };
     const confidence = analysis.risk_assessment?.confidence?.toLowerCase() || 'medium';
-    riskScore += confidenceWeights[confidence] || 10;
-    factors.push({ name: 'Data Uncertainty', value: confidenceWeights[confidence] || 10, max: 15 });
+    const reliabilityScore = reliabilityScores[confidence] || 10;
+    riskScore += reliabilityScore;
+    factors.push({ name: 'Data Uncertainty', value: reliabilityScore, max: 20 });
 
-    // Calculate final percentage (out of 100)
-    const riskPercentage = Math.min(100, riskScore);
+    // Normalize to realistic range (30-85 instead of 0-100)
+    const normalizedScore = Math.min(85, Math.max(30, riskScore));
     
-    // Determine risk level based on percentage
+    // Determine risk level from normalized score
     let calculatedRiskLevel = 'low';
-    if (riskPercentage >= 80) calculatedRiskLevel = 'critical';
-    else if (riskPercentage >= 60) calculatedRiskLevel = 'high';
-    else if (riskPercentage >= 40) calculatedRiskLevel = 'medium';
+    if (normalizedScore >= 70) calculatedRiskLevel = 'critical';
+    else if (normalizedScore >= 55) calculatedRiskLevel = 'high';
+    else if (normalizedScore >= 45) calculatedRiskLevel = 'medium';
 
     return {
-      percentage: riskPercentage,
+      percentage: Math.round(normalizedScore),
       level: calculatedRiskLevel,
       factors: factors,
-      breakdown: `${riskScore}/100 points`
+      breakdown: `${Math.round(riskScore)}/100 points`,
+      rawScore: riskScore
     };
   };
 
@@ -359,65 +368,113 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
                   })}
                 </div>
 
-                {/* Population Impact Visualization */}
+                {/* Population Distribution by Area */}
                 <div className="mb-4">
                   <p className={`text-sm font-semibold mb-3 flex items-center gap-2 ${
                     darkMode ? 'text-gray-200' : 'text-gray-800'
                   }`}>
                     <Users className="w-4 h-4" />
-                    Population Impact Analysis
+                    Area Population Distribution
                   </p>
                   
                   {analysis.location_specific_insights.map((insight, index) => {
-                    // Parse population numbers for visualization
-                    const parsePopulation = (popStr) => {
-                      if (!popStr) return 0;
-                      const str = popStr.toString().toLowerCase();
-                      if (str.includes('million') || str.includes('m')) {
-                        const num = parseFloat(str.match(/[\d.]+/)?.[0] || 0);
-                        return num * 1000000;
+                    // Estimate area population based on location (more realistic)
+                    const getAreaPopulation = (locationName) => {
+                      const cityPopulations = {
+                        'lahore': 11126285,
+                        'karachi': 14910352,
+                        'islamabad': 1014825,
+                        'rawalpindi': 2098231,
+                        'faisalabad': 3203846,
+                        'multan': 1871843,
+                        'peshawar': 1970042,
+                        'quetta': 1001205
+                      };
+                      
+                      const normalizedName = locationName.toLowerCase();
+                      for (const [city, pop] of Object.entries(cityPopulations)) {
+                        if (normalizedName.includes(city)) {
+                          return pop;
+                        }
                       }
-                      if (str.includes('thousand') || str.includes('k')) {
-                        const num = parseFloat(str.match(/[\d.]+/)?.[0] || 0);
-                        return num * 1000;
-                      }
-                      return parseInt(str.replace(/,/g, '')) || 0;
+                      return 1000000; // Default 1 million
                     };
 
-                    const population = parsePopulation(insight.affected_population);
-                    const maxPop = 2000000; // 2 million as max for scaling
-                    const percentage = Math.min(100, (population / maxPop) * 100);
+                    const totalPop = getAreaPopulation(insight.location);
+                    const affectedPop = parseFloat(insight.affected_population?.toString().match(/[\d.]+/)?.[0] || 0);
+                    const affectedMultiplier = insight.affected_population?.toLowerCase().includes('million') ? 1000000 :
+                                              insight.affected_population?.toLowerCase().includes('thousand') ? 1000 : 1;
+                    const affected = affectedPop * affectedMultiplier;
+                    
+                    const affectedPercentage = totalPop > 0 ? Math.min(100, (affected / totalPop) * 100) : 0;
 
                     return (
-                      <div key={index} className="mb-3 last:mb-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className={`text-xs font-medium ${
-                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                      <div key={index} className="mb-4 last:mb-0">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className={`text-sm font-semibold ${
+                            darkMode ? 'text-gray-200' : 'text-gray-800'
                           }`}>
                             {insight.location}
                           </span>
-                          <span className={`text-xs font-bold ${
-                            darkMode ? 'text-gray-200' : 'text-gray-800'
+                          <span className={`text-xs font-medium ${
+                            darkMode ? 'text-gray-400' : 'text-gray-600'
                           }`}>
-                            {insight.affected_population || 'Unknown'}
+                            Total: {(totalPop / 1000000).toFixed(1)}M
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${percentage}%` }}
-                            transition={{ duration: 1.2, delay: 0.6 + index * 0.2 }}
-                            className={`h-2 rounded-full ${
-                              getRiskColor(insight.risk_level).level === 'critical' ? 'bg-red-500' :
-                              getRiskColor(insight.risk_level).level === 'high' ? 'bg-orange-500' :
-                              getRiskColor(insight.risk_level).level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                            }`}
-                          />
+                        
+                        {/* Total Population Bar */}
+                        <div className="mb-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: '100%' }}
+                              transition={{ duration: 1, delay: 0.5 + index * 0.2 }}
+                              className="h-6 bg-blue-400 dark:bg-blue-500 rounded-full"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                              Total Population
+                            </span>
+                          </div>
                         </div>
-                        <p className={`text-xs mt-1 ${
+                        
+                        {/* Affected Population Overlay */}
+                        {affected > 0 && (
+                          <div className="mb-2">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={`text-xs ${
+                                darkMode ? 'text-gray-400' : 'text-gray-600'
+                              }`}>
+                                At Risk
+                              </span>
+                              <span className={`text-xs font-bold ${
+                                darkMode ? 'text-gray-200' : 'text-gray-800'
+                              }`}>
+                                {insight.affected_population} ({affectedPercentage.toFixed(1)}%)
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${affectedPercentage}%` }}
+                                transition={{ duration: 1.2, delay: 0.7 + index * 0.2 }}
+                                className={`h-4 rounded-full ${
+                                  insight.risk_level?.toLowerCase() === 'critical' ? 'bg-red-500' :
+                                  insight.risk_level?.toLowerCase() === 'high' ? 'bg-orange-500' :
+                                  insight.risk_level?.toLowerCase() === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                                }`}
+                              />
+                              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-800">
+                                {affectedPercentage.toFixed(1)}% Affected
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <p className={`text-xs ${
                           darkMode ? 'text-gray-400' : 'text-gray-600'
                         }`}>
-                          Risk: {insight.risk_level} • {insight.current_status}
+                          Risk Level: {insight.risk_level} • {insight.current_status}
                         </p>
                       </div>
                     );

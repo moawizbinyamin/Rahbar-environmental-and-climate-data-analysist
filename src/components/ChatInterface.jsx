@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Send, MapPin, AlertTriangle, CheckCircle, Paperclip, Smile, MoreVertical, Bot, User, Loader2, ChevronLeft, ChevronRight, MessageSquare, X } from 'lucide-react';
+import { Send, MapPin, AlertTriangle, CheckCircle, Bot, User, Loader2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirestore } from '../hooks/useFirestore';
 import { coreLLMService } from '../services/coreLLMService';
@@ -7,34 +7,9 @@ import { coreLLMService } from '../services/coreLLMService';
 const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false, collapsed = false, onToggleCollapse }) => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [recognition, setRecognition] = useState(null);
   const messagesEndRef = useRef(null);
   const { addChatMessage, addAnalysis } = useFirestore();
-
-  useEffect(() => {
-    // Initialize speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = false;
-      recognitionInstance.lang = 'en-US';
-
-      recognitionInstance.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInputValue(transcript);
-        setIsListening(false);
-      };
-
-      recognitionInstance.onerror = () => {
-        setIsListening(false);
-      };
-
-      setRecognition(recognitionInstance);
-    }
-  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -367,22 +342,6 @@ const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false
           </div>
           
           <div className="flex flex-col gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={isListening ? stopListening : startListening}
-              className={`p-3 rounded-xl transition-colors duration-300 ${
-                isListening 
-                  ? 'bg-red-500 hover:bg-red-600 text-white' 
-                  : darkMode
-                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-              }`}
-              disabled={isProcessing}
-            >
-              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </motion.button>
-            
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
