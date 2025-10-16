@@ -96,7 +96,7 @@ const Dashboard = () => {
           darkMode 
             ? 'bg-gray-900/80 border-gray-700' 
             : 'bg-white/80 border-white/20'
-        } backdrop-blur-sm border-b shadow-sm transition-colors duration-300`}
+        } backdrop-blur-sm border-b shadow-sm transition-colors duration-300 relative z-[100]`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -202,7 +202,7 @@ const Dashboard = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className={`absolute right-0 top-full mt-2 w-56 rounded-lg shadow-2xl overflow-hidden z-[60] ${
+                        className={`absolute right-0 top-full mt-2 w-56 rounded-lg shadow-2xl overflow-hidden z-[150] ${
                           darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
                         }`}
                         style={{ pointerEvents: 'auto' }}
@@ -287,7 +287,7 @@ const Dashboard = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className={`absolute right-0 top-full mt-2 w-56 rounded-lg shadow-2xl overflow-hidden z-[70] ${
+                      className={`absolute right-0 top-full mt-2 w-56 rounded-lg shadow-2xl overflow-hidden z-[150] ${
                         darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
                       }`}
                       style={{ pointerEvents: 'auto' }}
