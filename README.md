@@ -123,20 +123,22 @@ npm install
 ### 3. Environment Setup
 Create a `.env` file in the root directory:
 ```env
-# Google Gemini AI
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
-
-# OpenWeatherMap API
-VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
-
-# Firebase Configuration (Optional - already configured)
+# Firebase Configuration (Required)
 VITE_FIREBASE_API_KEY=your_firebase_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+
+# Google Gemini AI (Required for LLM features)
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+
+# OpenWeatherMap API (Optional - for real weather data)
+VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
 ```
+
+> **🔒 Security Note**: Firebase API keys are safe to expose in client-side code. Security is enforced through Firebase Security Rules, not API key hiding. See [SECURITY_CONFIG.md](SECURITY_CONFIG.md) for detailed security guidelines.
 
 ### 4. Development Server
 ```bash
