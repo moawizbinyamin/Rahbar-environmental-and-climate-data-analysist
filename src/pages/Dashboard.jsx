@@ -30,10 +30,14 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
+      setShowUserMenu(false);
+      console.log('Logging out...');
       await logout();
-      navigate('/');
+      console.log('Logout successful, navigating to home...');
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Error logging out:', error);
+      alert('Failed to logout. Please try again.');
     }
   };
 
