@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Map, BarChart3 } from 'lucide-react';
+import { Brain, Map, BarChart3, FileText } from 'lucide-react';
 import ChatInterface from './ChatInterface';
 import MapVisualization from './MapVisualization';
-import InsightPanel from './InsightPanel';
+import ReportSection from './ReportSection';
 
 const AnalysisSection = ({ 
   currentAnalysis, 
@@ -27,7 +27,7 @@ const AnalysisSection = ({
           }`}>
             {[
               { id: 'map', label: 'Map', icon: Map },
-              { id: 'insights', label: 'Insights', icon: BarChart3 }
+              { id: 'report', label: 'Report', icon: FileText }
             ].map((tab) => (
               <motion.button
                 key={tab.id}
@@ -68,14 +68,14 @@ const AnalysisSection = ({
           />
         </motion.div>
 
-        {/* Insight Panel - Right Column */}
+        {/* Report Section - Right Column */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
           className="w-1/2 p-4"
         >
-          <InsightPanel 
+          <ReportSection 
             analysisData={currentAnalysis}
             isLoading={isLoading}
             darkMode={darkMode}
@@ -103,16 +103,16 @@ const AnalysisSection = ({
             </motion.div>
           )}
           
-          {activeTab === 'insights' && (
+          {activeTab === 'report' && (
             <motion.div
-              key="insights"
+              key="report"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
               className="h-full p-2 sm:p-4"
             >
-              <InsightPanel 
+              <ReportSection 
                 analysisData={currentAnalysis}
                 isLoading={isLoading}
                 darkMode={darkMode}

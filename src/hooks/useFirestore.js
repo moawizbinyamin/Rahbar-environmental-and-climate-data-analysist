@@ -43,26 +43,36 @@ export const useFirestore = () => {
 
   // Helper function to sanitize data for Firestore
   const sanitizeForFirestore = (data) => {
-    const sanitized = { ...data };
+    // Deep clone to avoid modifying original data
+    const sanitized = JSON.parse(JSON.stringify(data));
     
-    // Convert nested arrays to strings to avoid Firestore issues
-    if (sanitized.alphaEarthData?.geospatialData) {
-      sanitized.alphaEarthData.geospatialData = JSON.stringify(sanitized.alphaEarthData.geospatialData);
-    }
+    // Recursively convert nested arrays to avoid Firestore issues
+    const sanitizeObject = (obj) => {
+      if (Array.isArray(obj)) {
+        // Convert arrays to JSON strings
+        return JSON.stringify(obj);
+      } else if (obj !== null && typeof obj === 'object') {
+        const result = {};
+        for (const key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            const value = obj[key];
+            if (Array.isArray(value)) {
+              // Convert arrays to JSON strings
+              result[key] = JSON.stringify(value);
+            } else if (value !== null && typeof value === 'object') {
+              // Recursively sanitize nested objects
+              result[key] = sanitizeObject(value);
+            } else {
+              result[key] = value;
+            }
+          }
+        }
+        return result;
+      }
+      return obj;
+    };
     
-    if (sanitized.deepMindAnalysis?.neural_network_analysis) {
-      sanitized.deepMindAnalysis.neural_network_analysis = JSON.stringify(sanitized.deepMindAnalysis.neural_network_analysis);
-    }
-    
-    if (sanitized.deepMindAnalysis?.computer_vision_analysis) {
-      sanitized.deepMindAnalysis.computer_vision_analysis = JSON.stringify(sanitized.deepMindAnalysis.computer_vision_analysis);
-    }
-    
-    if (sanitized.deepMindAnalysis?.satellite_imagery_analysis) {
-      sanitized.deepMindAnalysis.satellite_imagery_analysis = JSON.stringify(sanitized.deepMindAnalysis.satellite_imagery_analysis);
-    }
-    
-    return sanitized;
+    return sanitizeObject(sanitized);
   };
 
   const addChatMessage = async (messageData) => {
