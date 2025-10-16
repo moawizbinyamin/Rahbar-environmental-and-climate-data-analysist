@@ -6,6 +6,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'orbitron': ['Orbitron', 'monospace'],
+        'rajdhani': ['Rajdhani', 'sans-serif'],
+      },
       colors: {
         earth: {
           50: '#f0f9f0',

@@ -9,10 +9,17 @@ const RahbarLogo = ({ size = 'default', className = '', showText = true, textSty
   };
 
   const textSizeClasses = {
-    small: 'text-lg',
-    default: 'text-2xl',
-    large: 'text-3xl',
-    xlarge: 'text-4xl'
+    small: 'text-xl',
+    default: 'text-3xl',
+    large: 'text-4xl',
+    xlarge: 'text-5xl'
+  };
+
+  // Font families for different styles
+  const fontFamilyClasses = {
+    solid: 'font-orbitron',
+    outline: 'font-orbitron',
+    gradient: 'font-orbitron'
   };
 
   const textStyleClasses = {
@@ -22,9 +29,9 @@ const RahbarLogo = ({ size = 'default', className = '', showText = true, textSty
   };
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={`flex items-center gap-4 ${className}`}>
       {/* Logo SVG */}
-      <div className={`${sizeClasses[size]} relative`}>
+      <div className={`${sizeClasses[size]} relative flex-shrink-0`}>
         <svg
           viewBox="0 0 120 120"
           className="w-full h-full"
@@ -241,7 +248,7 @@ const RahbarLogo = ({ size = 'default', className = '', showText = true, textSty
       
       {/* Text */}
       {showText && (
-        <span className={`${textSizeClasses[size]} ${textStyleClasses[textStyle]} text-gray-800 dark:text-white transition-colors duration-300 uppercase`}>
+        <span className={`${textSizeClasses[size]} ${fontFamilyClasses[textStyle]} ${textStyleClasses[textStyle]} text-gray-800 dark:text-white transition-colors duration-300 uppercase leading-none`}>
           RAHBAR
         </span>
       )}
