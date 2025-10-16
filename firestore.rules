@@ -1,23 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read/write access for development (free plan)
+    // User profiles - users can only read/write their own profile
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Analyses - authenticated users can read all, write their own
     match /analyses/{document} {
-      allow read, write: if true;
-    }
-    
-    // Allow public read/write access to chat history
-    match /chatHistory/{document} {
-      allow read, write: if true;
-    }
-    
-    // Allow read access to public data
-    match /public/{document} {
       allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
     
-    // Allow read access to all other documents for development
-    match /{document=**} {
+    // Chat History - authenticated users can read all, write their own
+    match /chatHistory/{document} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Public documents - anyone can read
+    match /public/{document} {
       allow read: if true;
     }
   }

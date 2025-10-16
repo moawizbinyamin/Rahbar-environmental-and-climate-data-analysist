@@ -26,7 +26,6 @@ const AnalysisSection = ({
             darkMode ? 'bg-gray-800' : 'bg-gray-100'
           }`}>
             {[
-              { id: 'chat', label: 'Chat', icon: Brain },
               { id: 'map', label: 'Map', icon: Map },
               { id: 'insights', label: 'Insights', icon: BarChart3 }
             ].map((tab) => (
@@ -53,30 +52,14 @@ const AnalysisSection = ({
         </div>
       </div>
 
-      {/* Desktop Layout */}
+      {/* Desktop Layout - Full Width */}
       <div className="hidden lg:flex flex-1 max-w-7xl mx-auto w-full">
-        {showChat && (
-          /* Chat Interface - Left Column */
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="w-1/3 p-4"
-          >
-            <ChatInterface 
-              onAnalysisComplete={onAnalysisComplete}
-              onProcessingStart={onProcessingStart}
-              darkMode={darkMode}
-            />
-          </motion.div>
-        )}
-
-        {/* Map Visualization - Center Column */}
+        {/* Map Visualization - Left Column */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className={showChat ? "w-1/3 p-4" : "w-1/2 p-4"}
+          transition={{ delay: 0.1 }}
+          className="w-1/2 p-4"
         >
           <MapVisualization 
             analysisData={currentAnalysis}
@@ -89,8 +72,8 @@ const AnalysisSection = ({
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className={showChat ? "w-1/3 p-4" : "w-1/2 p-4"}
+          transition={{ delay: 0.2 }}
+          className="w-1/2 p-4"
         >
           <InsightPanel 
             analysisData={currentAnalysis}
@@ -103,25 +86,6 @@ const AnalysisSection = ({
       {/* Mobile Layout */}
       <div className="lg:hidden flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
-          {activeTab === 'chat' && (
-            <motion.div
-              key="chat"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="h-full p-2 sm:p-4"
-            >
-              <ChatInterface 
-                onAnalysisComplete={onAnalysisComplete}
-                onProcessingStart={onProcessingStart}
-                darkMode={darkMode}
-                collapsed={false}
-                onToggleCollapse={onToggleChatCollapse}
-              />
-            </motion.div>
-          )}
-          
           {activeTab === 'map' && (
             <motion.div
               key="map"

@@ -19,9 +19,13 @@ export class GeospatialDataService {
   
   async geocodeLocation(locationName) {
     try {
-      const response = await fetch(
+      // Use a CORS proxy to avoid CORS issues
+      const corsProxy = 'https://api.allorigins.win/raw?url=';
+      const encodedUrl = encodeURIComponent(
         `${this.nominatimBaseUrl}/search?format=json&q=${encodeURIComponent(locationName)}&limit=1&addressdetails=1`
       );
+      
+      const response = await fetch(corsProxy + encodedUrl);
       
       if (!response.ok) {
         throw new Error(`Geocoding failed: ${response.status}`);
@@ -45,16 +49,20 @@ export class GeospatialDataService {
       
       throw new Error('Location not found');
     } catch (error) {
-      console.error('Geocoding error:', error);
+      console.log('Geocoding API failed, using fallback:', error.message);
       return this.getFallbackLocation(locationName);
     }
   }
 
   async reverseGeocode(lat, lon) {
     try {
-      const response = await fetch(
+      // Use a CORS proxy to avoid CORS issues
+      const corsProxy = 'https://api.allorigins.win/raw?url=';
+      const encodedUrl = encodeURIComponent(
         `${this.nominatimBaseUrl}/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`
       );
+      
+      const response = await fetch(corsProxy + encodedUrl);
       
       if (!response.ok) {
         throw new Error(`Reverse geocoding failed: ${response.status}`);
@@ -72,7 +80,7 @@ export class GeospatialDataService {
         postcode: data.address?.postcode
       };
     } catch (error) {
-      console.error('Reverse geocoding error:', error);
+      console.log('Reverse geocoding API failed, using fallback:', error.message);
       return { name: `${lat}, ${lon}`, lat, lon };
     }
   }

@@ -150,9 +150,13 @@ export class ClimateAnalysisService {
   
   async geocodeLocation(locationName) {
     try {
-      const response = await fetch(
+      // Use a CORS proxy to avoid CORS issues
+      const corsProxy = 'https://api.allorigins.win/raw?url=';
+      const encodedUrl = encodeURIComponent(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}&limit=1&addressdetails=1`
       );
+      
+      const response = await fetch(corsProxy + encodedUrl);
       
       if (!response.ok) throw new Error('Geocoding failed');
       
@@ -172,7 +176,7 @@ export class ClimateAnalysisService {
       
       throw new Error('Location not found');
     } catch (error) {
-      console.error('Geocoding error:', error);
+      console.log('Geocoding API failed, using fallback:', error.message);
       return this.getFallbackLocation(locationName);
     }
   }

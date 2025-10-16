@@ -8,7 +8,7 @@ import {
   onSnapshot,
   serverTimestamp 
 } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { db, auth } from '../firebase/config';
 
 export const useFirestore = () => {
   const [loading, setLoading] = useState(false);
@@ -22,11 +22,13 @@ export const useFirestore = () => {
       // Sanitize data to avoid Firestore nested array issues
       const sanitizedData = sanitizeForFirestore(analysisData);
       
+      const userId = auth.currentUser?.uid || 'anonymous';
       const docRef = await addDoc(collection(db, 'analyses'), {
         ...sanitizedData,
         timestamp: serverTimestamp(),
-        userId: 'anonymous', // For free plan without auth
-        sessionId: Date.now().toString() // Unique session identifier
+        userId: userId,
+        userEmail: auth.currentUser?.email || 'anonymous',
+        sessionId: Date.now().toString()
       });
       return docRef.id;
     } catch (err) {
@@ -71,11 +73,13 @@ export const useFirestore = () => {
       // Sanitize data to avoid Firestore nested array issues
       const sanitizedData = sanitizeForFirestore(messageData);
       
+      const userId = auth.currentUser?.uid || 'anonymous';
       const docRef = await addDoc(collection(db, 'chatHistory'), {
         ...sanitizedData,
         timestamp: serverTimestamp(),
-        userId: 'anonymous', // For free plan without auth
-        sessionId: Date.now().toString() // Unique session identifier
+        userId: userId,
+        userEmail: auth.currentUser?.email || 'anonymous',
+        sessionId: Date.now().toString()
       });
       return docRef.id;
     } catch (err) {

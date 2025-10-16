@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Send, MapPin, AlertTriangle, CheckCircle, Paperclip, Smile, MoreVertical, Bot, User, Loader2, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Mic, MicOff, Send, MapPin, AlertTriangle, CheckCircle, Paperclip, Smile, MoreVertical, Bot, User, Loader2, ChevronLeft, ChevronRight, MessageSquare, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirestore } from '../hooks/useFirestore';
 import { llmService } from '../services/llmService';
@@ -197,74 +197,7 @@ const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false
     }
   };
 
-  // Collapsed state - show only toggle button
-  if (collapsed) {
-    return (
-      <div className={`flex flex-col h-full backdrop-blur-sm rounded-2xl shadow-xl transition-colors duration-300 ${
-        darkMode ? 'bg-gray-800/90' : 'bg-white/90'
-      }`}>
-        {/* Collapsed Header */}
-        <div className={`p-4 border-b transition-colors duration-300 ${
-          darkMode ? 'border-gray-700' : 'border-gray-200'
-        }`}>
-          <div className="flex flex-col items-center space-y-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onToggleCollapse}
-              className={`p-3 rounded-lg transition-colors duration-300 ${
-                darkMode 
-                  ? 'hover:bg-gray-700 text-gray-300' 
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
-              title="Expand Chat"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </motion.button>
-            
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              className="w-8 h-8"
-            >
-              <Bot className={`w-8 h-8 transition-colors duration-300 ${
-                darkMode ? 'text-earth-400' : 'text-earth-500'
-              }`} />
-            </motion.div>
-            
-            <div className="text-center">
-              <p className={`text-xs font-medium transition-colors duration-300 ${
-                darkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>Chat</p>
-              {messages.length > 0 && (
-                <span className={`text-xs px-2 py-1 rounded-full transition-colors duration-300 ${
-                  darkMode ? 'bg-earth-500 text-white' : 'bg-earth-100 text-earth-800'
-                }`}>
-                  {messages.length}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Collapsed Content - Show recent messages count */}
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <MessageSquare className={`w-8 h-8 mx-auto mb-2 transition-colors duration-300 ${
-              darkMode ? 'text-gray-500' : 'text-gray-400'
-            }`} />
-            <p className={`text-xs transition-colors duration-300 ${
-              darkMode ? 'text-gray-500' : 'text-gray-400'
-            }`}>
-              {messages.length} messages
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Expanded state - show full chat interface
+  // Chat dropdown interface
   return (
     <div className={`flex flex-col h-full backdrop-blur-sm rounded-2xl shadow-xl transition-colors duration-300 ${
       darkMode ? 'bg-gray-800/90' : 'bg-white/90'
@@ -293,32 +226,19 @@ const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false
               darkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>Ask me about climate, environment, or disaster data</p>
           </div>
-          <div className="flex items-center gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onToggleCollapse}
-              className={`p-2 rounded-lg transition-colors duration-300 ${
-                darkMode 
-                  ? 'hover:bg-gray-700 text-gray-400' 
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
-              title="Collapse Chat"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`p-2 rounded-lg transition-colors duration-300 ${
-                darkMode 
-                  ? 'hover:bg-gray-700 text-gray-400' 
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
-            >
-              <MoreVertical className="w-5 h-5" />
-            </motion.button>
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onToggleCollapse}
+            className={`p-2 rounded-lg transition-colors duration-300 ${
+              darkMode 
+                ? 'hover:bg-gray-700 text-gray-400' 
+                : 'hover:bg-gray-100 text-gray-600'
+            }`}
+            title="Close Chat"
+          >
+            <X className="w-5 h-5" />
+          </motion.button>
         </div>
       </div>
 
