@@ -16,9 +16,9 @@ const RahbarLogo = ({ size = 'default', className = '', showText = true, textSty
   };
 
   const textStyleClasses = {
-    solid: 'font-bold',
-    outline: 'font-extrabold',
-    gradient: 'font-bold bg-gradient-to-r from-earth-500 to-sky-500 bg-clip-text text-transparent'
+    solid: 'font-black tracking-wider',
+    outline: 'font-black tracking-wider',
+    gradient: 'font-black tracking-wider bg-gradient-to-r from-earth-500 to-sky-500 bg-clip-text text-transparent'
   };
 
   return (
@@ -241,8 +241,8 @@ const RahbarLogo = ({ size = 'default', className = '', showText = true, textSty
       
       {/* Text */}
       {showText && (
-        <span className={`${textSizeClasses[size]} ${textStyleClasses[textStyle]} text-gray-800 dark:text-white transition-colors duration-300`}>
-          Rahbar
+        <span className={`${textSizeClasses[size]} ${textStyleClasses[textStyle]} text-gray-800 dark:text-white transition-colors duration-300 uppercase`}>
+          RAHBAR
         </span>
       )}
     </div>
