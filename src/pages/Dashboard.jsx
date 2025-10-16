@@ -44,7 +44,9 @@ const Dashboard = () => {
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showUserMenu && !event.target.closest('.user-menu-container')) {
+      if (showUserMenu && 
+          !event.target.closest('.user-menu-container') && 
+          !event.target.closest('.user-menu-container-mobile')) {
         setShowUserMenu(false);
       }
     };
@@ -199,9 +201,10 @@ const Dashboard = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg overflow-hidden ${
+                        className={`absolute right-0 top-full mt-2 w-56 rounded-lg shadow-2xl overflow-hidden z-[60] ${
                           darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
                         }`}
+                        style={{ pointerEvents: 'auto' }}
                       >
                         <div className={`px-4 py-3 border-b ${
                           darkMode ? 'border-gray-700' : 'border-gray-200'
@@ -218,31 +221,20 @@ const Dashboard = () => {
                           </p>
                         </div>
                         
-                        <div className="py-1">
+                        <div className="py-2">
                           <button
-                            onClick={() => {
-                              setShowUserMenu(false);
-                              // Add profile navigation if needed
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleLogout();
                             }}
-                            className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
+                            className={`w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer ${
                               darkMode 
-                                ? 'text-gray-300 hover:bg-gray-700' 
-                                : 'text-gray-700 hover:bg-gray-100'
+                                ? 'text-red-400 hover:bg-gray-700 active:bg-gray-600' 
+                                : 'text-red-600 hover:bg-red-50 active:bg-red-100'
                             }`}
                           >
-                            <Settings className="w-4 h-4" />
-                            Settings
-                          </button>
-                          
-                          <button
-                            onClick={handleLogout}
-                            className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
-                              darkMode 
-                                ? 'text-red-400 hover:bg-gray-700' 
-                                : 'text-red-600 hover:bg-red-50'
-                            }`}
-                          >
-                            <LogOut className="w-4 h-4" />
+                            <LogOut className="w-5 h-5" />
                             Logout
                           </button>
                         </div>
@@ -253,19 +245,89 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`lg:hidden p-2 rounded-lg transition-colors duration-300 ${
-                darkMode 
-                  ? 'hover:bg-gray-700 text-gray-300' 
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
-            >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </motion.button>
+            {/* Mobile User Menu */}
+            <div className="lg:hidden flex items-center gap-2">
+              {/* Dark Mode Toggle - Mobile */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setDarkMode(!darkMode)}
+                className={`p-2 rounded-lg transition-colors duration-300 ${
+                  darkMode 
+                    ? 'hover:bg-gray-700 text-yellow-400' 
+                    : 'hover:bg-gray-100 text-gray-600'
+                }`}
+              >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </motion.button>
+
+              {/* User Avatar - Mobile */}
+              <div className="relative user-menu-container-mobile">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className={`p-2 rounded-lg transition-colors duration-300 ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-300' 
+                      : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-earth-500 rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                </motion.button>
+
+                {/* Mobile User Dropdown Menu */}
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className={`absolute right-0 top-full mt-2 w-56 rounded-lg shadow-2xl overflow-hidden z-[70] ${
+                        darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                      }`}
+                      style={{ pointerEvents: 'auto' }}
+                    >
+                      <div className={`px-4 py-3 border-b ${
+                        darkMode ? 'border-gray-700' : 'border-gray-200'
+                      }`}>
+                        <p className={`text-sm font-medium ${
+                          darkMode ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          {userProfile?.displayName || 'User'}
+                        </p>
+                        <p className={`text-xs ${
+                          darkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                          {currentUser?.email}
+                        </p>
+                      </div>
+                      
+                      <div className="py-2">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleLogout();
+                          }}
+                          className={`w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                            darkMode 
+                              ? 'text-red-400 hover:bg-gray-700 active:bg-gray-600' 
+                              : 'text-red-600 hover:bg-red-50 active:bg-red-100'
+                          }`}
+                        >
+                          <LogOut className="w-5 h-5" />
+                          Logout
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
         </div>
       </motion.header>
@@ -290,26 +352,26 @@ const Dashboard = () => {
         </motion.button>
 
         {/* Chat Dropdown - Fixed Position (Always mounted, just hidden) */}
-        <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
           animate={{ 
             opacity: chatCollapsed ? 0 : 1,
             y: chatCollapsed ? -20 : 0,
             scale: chatCollapsed ? 0.95 : 1,
             display: chatCollapsed ? 'none' : 'block'
           }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="fixed top-24 right-6 z-40 w-96 h-[calc(100vh-8rem)] max-w-[calc(100vw-3rem)]"
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="fixed top-24 right-6 z-40 w-96 h-[calc(100vh-8rem)] max-w-[calc(100vw-3rem)]"
           style={{ pointerEvents: chatCollapsed ? 'none' : 'auto' }}
-        >
-          <ChatInterface 
-            onAnalysisComplete={handleAnalysisComplete}
-            onProcessingStart={handleProcessingStart}
-            darkMode={darkMode}
-            collapsed={false}
-            onToggleCollapse={() => setChatCollapsed(!chatCollapsed)}
-          />
-        </motion.div>
+            >
+              <ChatInterface 
+                onAnalysisComplete={handleAnalysisComplete}
+                onProcessingStart={handleProcessingStart}
+                darkMode={darkMode}
+                collapsed={false}
+                onToggleCollapse={() => setChatCollapsed(!chatCollapsed)}
+              />
+            </motion.div>
 
         {/* Main Content Area */}
         <div className="h-full w-full">
