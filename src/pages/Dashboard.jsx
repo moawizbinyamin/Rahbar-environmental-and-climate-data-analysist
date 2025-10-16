@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('map');
   const [chatCollapsed, setChatCollapsed] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [chatButtonPosition, setChatButtonPosition] = useState({ x: 0, y: 0 });
 
   const handleAnalysisComplete = (analysisData) => {
     setCurrentAnalysis(analysisData);
@@ -334,22 +335,38 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden relative">
-        {/* Chat Dropdown Button - Fixed Position */}
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+        {/* Chat Dropdown Button - Draggable */}
+        <motion.div
+          drag
+          dragMomentum={false}
+          dragElastic={0.1}
+          dragConstraints={{
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+          initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
+          animate={{ x: chatButtonPosition.x, y: chatButtonPosition.y, scale: 1, opacity: 1 }}
+          onDragEnd={(event, info) => {
+            setChatButtonPosition({ x: info.offset.x, y: info.offset.y });
+          }}
+          className="fixed top-20 right-6 z-50 cursor-move"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+        >
+          <motion.button
           onClick={() => setChatCollapsed(!chatCollapsed)}
-          className={`fixed top-20 right-6 z-50 p-4 rounded-full shadow-lg transition-colors duration-300 ${
+            className={`p-4 rounded-full shadow-lg transition-colors duration-300 ${
             darkMode 
               ? 'bg-earth-500 hover:bg-earth-600 text-white' 
               : 'bg-earth-500 hover:bg-earth-600 text-white'
           }`}
-          title={chatCollapsed ? "Open Chat" : "Close Chat"}
+            title={chatCollapsed ? "Open Chat (Draggable)" : "Close Chat (Draggable)"}
         >
           <Brain className="w-6 h-6" />
         </motion.button>
+        </motion.div>
 
         {/* Chat Dropdown - Fixed Position (Always mounted, just hidden) */}
             <motion.div
