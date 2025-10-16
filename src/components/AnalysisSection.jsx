@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Map, BarChart3, FileText } from 'lucide-react';
 import ChatInterface from './ChatInterface';
-import MapVisualization from './MapVisualization';
+import EnhancedMapVisualization from './EnhancedMapVisualization';
 import ReportSection from './ReportSection';
 
 const AnalysisSection = ({ 
@@ -61,7 +61,7 @@ const AnalysisSection = ({
           transition={{ delay: 0.1 }}
           className="w-1/2 p-4"
         >
-          <MapVisualization 
+          <EnhancedMapVisualization 
             analysisData={currentAnalysis}
             isLoading={isLoading}
             darkMode={darkMode}
@@ -95,7 +95,7 @@ const AnalysisSection = ({
               transition={{ duration: 0.3 }}
               className="h-full p-2 sm:p-4"
             >
-              <MapVisualization 
+              <EnhancedMapVisualization 
                 analysisData={currentAnalysis}
                 isLoading={isLoading}
                 darkMode={darkMode}

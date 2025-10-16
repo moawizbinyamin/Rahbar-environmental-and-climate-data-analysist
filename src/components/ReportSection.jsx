@@ -41,6 +41,73 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
 
   const { analysis, queryType, locations, urgency, timestamp } = analysisData;
 
+  // Dynamic Risk Calculation based on multiple factors
+  const calculateDynamicRisk = () => {
+    let riskScore = 0;
+    let factors = [];
+
+    // Factor 1: Base risk level from LLM (40% weight)
+    const baseRiskWeights = {
+      'critical': 40,
+      'high': 30,
+      'medium': 20,
+      'low': 10
+    };
+    const baseRisk = analysis.risk_assessment?.overall_risk_level?.toLowerCase() || 'medium';
+    riskScore += baseRiskWeights[baseRisk] || 20;
+    factors.push({ name: 'Base Assessment', value: baseRiskWeights[baseRisk] || 20, max: 40 });
+
+    // Factor 2: Urgency level (25% weight)
+    const urgencyWeights = {
+      'critical': 25,
+      'high': 20,
+      'medium': 12,
+      'low': 5
+    };
+    const urgencyLevel = urgency?.toLowerCase() || 'medium';
+    riskScore += urgencyWeights[urgencyLevel] || 12;
+    factors.push({ name: 'Urgency', value: urgencyWeights[urgencyLevel] || 12, max: 25 });
+
+    // Factor 3: Population impact (20% weight)
+    let populationScore = 10;
+    if (locations?.[0]?.population_affected) {
+      const popString = locations[0].population_affected.toString();
+      if (popString.includes('million') || popString.includes('M')) populationScore = 20;
+      else if (popString.includes('thousand') || popString.includes('K')) populationScore = 15;
+      else if (parseInt(popString.replace(/,/g, '')) > 100000) populationScore = 18;
+    }
+    riskScore += populationScore;
+    factors.push({ name: 'Population Impact', value: populationScore, max: 20 });
+
+    // Factor 4: Confidence (inverse - 15% weight)
+    const confidenceWeights = {
+      'high': 5,
+      'medium': 10,
+      'low': 15
+    };
+    const confidence = analysis.risk_assessment?.confidence?.toLowerCase() || 'medium';
+    riskScore += confidenceWeights[confidence] || 10;
+    factors.push({ name: 'Data Uncertainty', value: confidenceWeights[confidence] || 10, max: 15 });
+
+    // Calculate final percentage (out of 100)
+    const riskPercentage = Math.min(100, riskScore);
+    
+    // Determine risk level based on percentage
+    let calculatedRiskLevel = 'low';
+    if (riskPercentage >= 80) calculatedRiskLevel = 'critical';
+    else if (riskPercentage >= 60) calculatedRiskLevel = 'high';
+    else if (riskPercentage >= 40) calculatedRiskLevel = 'medium';
+
+    return {
+      percentage: riskPercentage,
+      level: calculatedRiskLevel,
+      factors: factors,
+      breakdown: `${riskScore}/100 points`
+    };
+  };
+
+  const dynamicRisk = calculateDynamicRisk();
+
   const getRiskColor = (riskLevel) => {
     const level = riskLevel?.toLowerCase();
     switch (level) {
@@ -102,12 +169,13 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
             </div>
           </div>
           
-          {/* Overall Risk Badge */}
-          <div className={`px-4 py-2 rounded-lg border-2 ${riskColors.bg} ${riskColors.text} ${riskColors.border} flex items-center gap-2`}>
-            {getRiskIcon(analysis.risk_assessment?.overall_risk_level)}
+          {/* Overall Risk Badge - Dynamic */}
+          <div className={`px-4 py-2 rounded-lg border-2 ${getRiskColor(dynamicRisk.level).bg} ${getRiskColor(dynamicRisk.level).text} ${getRiskColor(dynamicRisk.level).border} flex items-center gap-2`}>
+            {getRiskIcon(dynamicRisk.level)}
             <div>
-              <p className="text-xs font-medium opacity-80">Overall Risk</p>
-              <p className="text-sm font-bold uppercase">{analysis.risk_assessment?.overall_risk_level || 'N/A'}</p>
+              <p className="text-xs font-medium opacity-80">Risk Score</p>
+              <p className="text-lg font-bold">{dynamicRisk.percentage}%</p>
+              <p className="text-xs font-medium uppercase">{dynamicRisk.level}</p>
             </div>
           </div>
         </div>
@@ -138,7 +206,7 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
             </p>
           </motion.div>
 
-          {/* Risk Assessment with Percentages */}
+          {/* Dynamic Risk Assessment with Factor Breakdown */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -148,96 +216,79 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
               darkMode ? 'text-gray-200' : 'text-gray-800'
             }`}>
               <BarChart3 className="w-4 h-4" />
-              Risk Metrics
+              Dynamic Risk Calculation
             </h4>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Overall Risk Level */}
-              <div className={`p-4 rounded-lg border ${
-                darkMode ? 'bg-gray-700/30 border-gray-600' : 'bg-white border-gray-200'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-medium ${
-                    darkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Risk Level</span>
-                  <span className={`text-2xl font-bold ${riskColors.text}`}>
-                    {analysis.risk_assessment?.overall_risk_level === 'critical' ? '95%' :
-                     analysis.risk_assessment?.overall_risk_level === 'high' ? '75%' :
-                     analysis.risk_assessment?.overall_risk_level === 'medium' ? '50%' : '25%'}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-1000 ${
-                      analysis.risk_assessment?.overall_risk_level === 'critical' ? 'bg-red-500 w-[95%]' :
-                      analysis.risk_assessment?.overall_risk_level === 'high' ? 'bg-orange-500 w-[75%]' :
-                      analysis.risk_assessment?.overall_risk_level === 'medium' ? 'bg-yellow-500 w-1/2' : 'bg-green-500 w-1/4'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {/* Confidence Level */}
-              <div className={`p-4 rounded-lg border ${
-                darkMode ? 'bg-gray-700/30 border-gray-600' : 'bg-white border-gray-200'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-medium ${
-                    darkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Confidence</span>
-                  <span className="text-2xl font-bold text-blue-500">
-                    {analysis.risk_assessment?.confidence === 'high' ? '90%' :
-                     analysis.risk_assessment?.confidence === 'medium' ? '70%' : '50%'}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                  <div
-                    className={`bg-blue-500 h-2 rounded-full transition-all duration-1000 ${
-                      analysis.risk_assessment?.confidence === 'high' ? 'w-[90%]' :
-                      analysis.risk_assessment?.confidence === 'medium' ? 'w-[70%]' : 'w-1/2'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {/* Urgency Level */}
-              <div className={`p-4 rounded-lg border ${
-                darkMode ? 'bg-gray-700/30 border-gray-600' : 'bg-white border-gray-200'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-medium ${
-                    darkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Urgency</span>
-                  <Zap className={`w-6 h-6 ${
-                    urgency === 'critical' || urgency === 'high' ? 'text-red-500' :
-                    urgency === 'medium' ? 'text-yellow-500' : 'text-green-500'
-                  }`} />
-                </div>
-                <p className={`text-lg font-bold capitalize ${
-                  darkMode ? 'text-gray-200' : 'text-gray-800'
-                }`}>
-                  {urgency}
-                </p>
-              </div>
-
-              {/* Population Affected */}
-              {locations?.[0]?.population_affected && (
-                <div className={`p-4 rounded-lg border ${
-                  darkMode ? 'bg-gray-700/30 border-gray-600' : 'bg-white border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`text-xs font-medium ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>Population</span>
-                    <Users className="w-6 h-6 text-purple-500" />
-                  </div>
-                  <p className={`text-lg font-bold ${
-                    darkMode ? 'text-gray-200' : 'text-gray-800'
-                  }`}>
-                    {locations[0].population_affected}
+            {/* Overall Risk Score */}
+            <div className={`p-5 rounded-lg border-2 mb-4 ${getRiskColor(dynamicRisk.level).bg} ${getRiskColor(dynamicRisk.level).border}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className={`text-xs font-medium opacity-80 ${getRiskColor(dynamicRisk.level).text}`}>
+                    Calculated Risk Score
+                  </p>
+                  <p className={`text-4xl font-bold ${getRiskColor(dynamicRisk.level).text}`}>
+                    {dynamicRisk.percentage}%
+                  </p>
+                  <p className={`text-sm font-semibold uppercase mt-1 ${getRiskColor(dynamicRisk.level).text}`}>
+                    {dynamicRisk.level} Risk
                   </p>
                 </div>
-              )}
+                <div className="text-right">
+                  {getRiskIcon(dynamicRisk.level)}
+                  <p className={`text-xs mt-2 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    {dynamicRisk.breakdown}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Overall Progress Bar */}
+              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 mb-3">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${dynamicRisk.percentage}%` }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className={`h-3 rounded-full ${
+                    dynamicRisk.level === 'critical' ? 'bg-red-500' :
+                    dynamicRisk.level === 'high' ? 'bg-orange-500' :
+                    dynamicRisk.level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                  }`}
+                />
+              </div>
+
+              {/* Risk Factor Breakdown */}
+              <div className="space-y-2 mt-4">
+                <p className={`text-xs font-semibold mb-2 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Contributing Factors:
+                </p>
+                {dynamicRisk.factors.map((factor, index) => (
+                  <div key={index} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs ${
+                        darkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
+                        {factor.name}
+                      </span>
+                      <span className={`text-xs font-bold ${
+                        darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        {factor.value}/{factor.max}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(factor.value / factor.max) * 100}%` }}
+                        transition={{ duration: 1, delay: 0.3 + index * 0.1 }}
+                        className="bg-earth-500 h-1.5 rounded-full"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </motion.div>
 
@@ -275,7 +326,7 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
             </motion.div>
           )}
 
-          {/* Location-Specific Insights */}
+          {/* Summarized Location Analysis Card */}
           {analysis.location_specific_insights && analysis.location_specific_insights.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -286,61 +337,117 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
                 darkMode ? 'text-gray-200' : 'text-gray-800'
               }`}>
                 <MapPin className="w-4 h-4" />
-                Location Analysis
+                Location Summary
               </h4>
-              <div className="space-y-3">
-                {analysis.location_specific_insights.map((insight, index) => {
-                  const insightColors = getRiskColor(insight.risk_level);
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.6 + index * 0.1 }}
-                      className={`p-4 rounded-lg border ${insightColors.bg} ${insightColors.border}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className={`font-semibold ${insightColors.text}`}>
-                          {insight.location}
-                        </h5>
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${insightColors.text}`}>
-                          {insight.risk_level}
-                        </span>
-                      </div>
-                      <p className={`text-sm mb-2 ${
-                        darkMode ? 'text-gray-300' : 'text-gray-700'
-                      }`}>
-                        {insight.current_status}
-                      </p>
-                      {insight.specific_concerns && insight.specific_concerns.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                          {insight.specific_concerns.map((concern, i) => (
-                            <div key={i} className="flex items-start gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full bg-earth-500 mt-1.5 flex-shrink-0" />
-                              <p className={`text-xs ${
-                                darkMode ? 'text-gray-400' : 'text-gray-600'
-                              }`}>{concern}</p>
-                            </div>
-                          ))}
+              
+              {/* Combined Location Card */}
+              <div className={`p-5 rounded-lg border ${
+                darkMode ? 'bg-gradient-to-br from-gray-700/50 to-gray-800/50 border-gray-600' : 'bg-gradient-to-br from-white to-gray-50 border-gray-200'
+              }`}>
+                {/* Locations Header */}
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                  {analysis.location_specific_insights.map((insight, index) => {
+                    const insightColors = getRiskColor(insight.risk_level);
+                    return (
+                      <span
+                        key={index}
+                        className={`px-3 py-1.5 rounded-lg border ${insightColors.bg} ${insightColors.text} ${insightColors.border} text-sm font-semibold`}
+                      >
+                        {insight.location}
+                      </span>
+                    );
+                  })}
+                </div>
+
+                {/* Population Impact Visualization */}
+                <div className="mb-4">
+                  <p className={`text-sm font-semibold mb-3 flex items-center gap-2 ${
+                    darkMode ? 'text-gray-200' : 'text-gray-800'
+                  }`}>
+                    <Users className="w-4 h-4" />
+                    Population Impact Analysis
+                  </p>
+                  
+                  {analysis.location_specific_insights.map((insight, index) => {
+                    // Parse population numbers for visualization
+                    const parsePopulation = (popStr) => {
+                      if (!popStr) return 0;
+                      const str = popStr.toString().toLowerCase();
+                      if (str.includes('million') || str.includes('m')) {
+                        const num = parseFloat(str.match(/[\d.]+/)?.[0] || 0);
+                        return num * 1000000;
+                      }
+                      if (str.includes('thousand') || str.includes('k')) {
+                        const num = parseFloat(str.match(/[\d.]+/)?.[0] || 0);
+                        return num * 1000;
+                      }
+                      return parseInt(str.replace(/,/g, '')) || 0;
+                    };
+
+                    const population = parsePopulation(insight.affected_population);
+                    const maxPop = 2000000; // 2 million as max for scaling
+                    const percentage = Math.min(100, (population / maxPop) * 100);
+
+                    return (
+                      <div key={index} className="mb-3 last:mb-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`text-xs font-medium ${
+                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>
+                            {insight.location}
+                          </span>
+                          <span className={`text-xs font-bold ${
+                            darkMode ? 'text-gray-200' : 'text-gray-800'
+                          }`}>
+                            {insight.affected_population || 'Unknown'}
+                          </span>
                         </div>
-                      )}
-                      {insight.affected_population && (
-                        <div className={`mt-3 pt-3 border-t ${
-                          darkMode ? 'border-gray-600' : 'border-gray-200'
+                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${percentage}%` }}
+                            transition={{ duration: 1.2, delay: 0.6 + index * 0.2 }}
+                            className={`h-2 rounded-full ${
+                              getRiskColor(insight.risk_level).level === 'critical' ? 'bg-red-500' :
+                              getRiskColor(insight.risk_level).level === 'high' ? 'bg-orange-500' :
+                              getRiskColor(insight.risk_level).level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                            }`}
+                          />
+                        </div>
+                        <p className={`text-xs mt-1 ${
+                          darkMode ? 'text-gray-400' : 'text-gray-600'
                         }`}>
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-purple-500" />
-                            <span className={`text-xs font-medium ${
-                              darkMode ? 'text-gray-300' : 'text-gray-700'
-                            }`}>
-                              Affected Population: {insight.affected_population}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  );
-                })}
+                          Risk: {insight.risk_level} • {insight.current_status}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Combined Concerns */}
+                <div className={`p-3 rounded-lg ${
+                  darkMode ? 'bg-gray-600/30' : 'bg-gray-100'
+                }`}>
+                  <p className={`text-xs font-semibold mb-2 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Key Concerns Across All Locations:
+                  </p>
+                  <div className="space-y-1">
+                    {analysis.location_specific_insights.flatMap(insight => 
+                      insight.specific_concerns || []
+                    ).filter((concern, index, self) => 
+                      self.indexOf(concern) === index
+                    ).slice(0, 5).map((concern, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <AlertTriangle className="w-3 h-3 text-orange-500 flex-shrink-0 mt-0.5" />
+                        <p className={`text-xs ${
+                          darkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>{concern}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
