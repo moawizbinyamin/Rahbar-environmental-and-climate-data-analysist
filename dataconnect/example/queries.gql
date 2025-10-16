@@ -1,0 +1,68 @@
+mutation AddClimateDataPoint(
+  $locationId: UUID
+  $confidenceScore: Float
+  $dataType: String!
+  $predictionModel: String
+  $resolution: String
+  $timestamp: Timestamp!
+  $unit: String!
+  $value: Float!
+) @auth(level: USER) {
+  climateDataPoint_insert(
+    data: {
+      locationId: $locationId
+      confidenceScore: $confidenceScore
+      dataType: $dataType
+      predictionModel: $predictionModel
+      resolution: $resolution
+      timestamp: $timestamp
+      unit: $unit
+      value: $value
+    }
+  )
+}
+
+query GetDisasterEventsByLocation($locationId: UUID!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  disasterEvents(where: { locationId: { eq: $locationId } }) {
+    id
+    name
+    type
+    startTime
+    endTime
+    severity
+  }
+}
+
+mutation CreateAlertSubscription(
+  $userId: UUID!
+  $locationId: UUID!
+  $createdAt: Timestamp!
+  $deliveryMethod: String
+  $isActive: Boolean!
+  $recurrence: String
+  $threshold: String!
+  $type: String!
+) @auth(level: USER) {
+  alertSubscription_insert(
+    data: {
+      userId: $userId
+      locationId: $locationId
+      createdAt: $createdAt
+      deliveryMethod: $deliveryMethod
+      isActive: $isActive
+      recurrence: $recurrence
+      threshold: $threshold
+      type: $type
+    }
+  )
+}
+
+query GetLocationsByName($name: String!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  locations(where: { name: { eq: $name } }) {
+    id
+    name
+    latitude
+    longitude
+    country
+  }
+}

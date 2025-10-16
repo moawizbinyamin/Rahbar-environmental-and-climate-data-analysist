@@ -1,0 +1,64 @@
+type User @table {
+  displayName: String!
+  createdAt: Timestamp!
+  organization: String!
+  email: String
+  contactInfo: String
+  role: String
+}
+
+type Location @table {
+  name: String!
+  latitude: Float!
+  longitude: Float!
+  type: String!
+  boundaryGeoJson: String
+  country: String
+  adminLevel: String
+}
+
+type AlertSubscription @table {
+  type: String!
+  threshold: String!
+  createdAt: Timestamp!
+  isActive: Boolean!
+  recurrence: String
+  deliveryMethod: String
+  user: User
+  location: Location
+}
+
+type DisasterEvent @table {
+  name: String!
+  type: String!
+  status: String!
+  startTime: Timestamp!
+  createdAt: Timestamp!
+  endTime: Timestamp
+  severity: String
+  affectedAreaGeoJson: String
+  estimatedImpact: String
+  source: String
+  location: Location
+}
+
+type ClimateDataPoint @table {
+  dataType: String!
+  value: Float!
+  unit: String!
+  timestamp: Timestamp!
+  predictionModel: String
+  confidenceScore: Float
+  resolution: String
+  location: Location
+}
+
+type QueryLog @table {
+  queryText: String!
+  responseText: String!
+  createdAt: Timestamp!
+  queryType: String!
+  feedbackRating: Int
+  user: User
+  relevantLocation: Location
+}

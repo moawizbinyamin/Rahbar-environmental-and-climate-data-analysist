@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read/write access for development (free plan)
+    match /analyses/{document} {
+      allow read, write: if true;
+    }
+    
+    // Allow public read/write access to chat history
+    match /chatHistory/{document} {
+      allow read, write: if true;
+    }
+    
+    // Allow read access to public data
+    match /public/{document} {
+      allow read: if true;
+    }
+    
+    // Allow read access to all other documents for development
+    match /{document=**} {
+      allow read: if true;
+    }
+  }
+}

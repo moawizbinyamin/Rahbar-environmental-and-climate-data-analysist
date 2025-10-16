@@ -1,0 +1,92 @@
+mutation SeedData @transaction @auth(level: PUBLIC, insecureReason: "This operation is for seeding data and does not require authentication") {
+  location_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      name: "New York",
+      type: "City",
+      latitude: 40.7128,
+      longitude: -74.0060,
+      country: "USA",
+      adminLevel: "State"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      name: "London",
+      type: "City",
+      latitude: 51.5074,
+      longitude: 0.1278,
+      country: "UK",
+      adminLevel: "Country"
+    }
+  ])
+  user_insertMany(data: [
+    {
+      id: "650e8400-e29b-41d4-a716-446655440000",
+      displayName: "Bob User",
+      organization: "Example Inc.",
+      createdAt: "2024-01-01T00:00:00Z"
+    },
+    {
+      id: "650e8400-e29b-41d4-a716-446655440001",
+      displayName: "Alice Admin",
+      organization: "Example Inc.",
+      createdAt: "2024-01-01T00:00:00Z"
+    }
+  ])
+  alertSubscription_insertMany(data: [
+    {
+      locationId: "550e8400-e29b-41d4-a716-446655440000",
+      userId: "650e8400-e29b-41d4-a716-446655440000",
+      createdAt: "2024-01-05T00:00:00Z",
+      deliveryMethod: "email",
+      isActive: true,
+      recurrence: "daily",
+      threshold: "high",
+      type: "flood"
+    },
+    {
+      locationId: "550e8400-e29b-41d4-a716-446655440001",
+      userId: "650e8400-e29b-41d4-a716-446655440001",
+      createdAt: "2024-01-05T00:00:00Z",
+      deliveryMethod: "sms",
+      isActive: true,
+      recurrence: "weekly",
+      threshold: "critical",
+      type: "earthquake"
+    }
+  ])
+  climateDataPoint_insertMany(data: [
+    {
+      locationId: "550e8400-e29b-41d4-a716-446655440000",
+      timestamp: "2024-01-10T00:00:00Z",
+      dataType: "temperature",
+      unit: "celsius",
+      value: 25.5
+    },
+    {
+      locationId: "550e8400-e29b-41d4-a716-446655440001",
+      timestamp: "2024-01-10T00:00:00Z",
+      dataType: "rainfall",
+      unit: "mm",
+      value: 10.2
+    }
+  ])
+ disasterEvent_insertMany(data: [
+    {
+      locationId: "550e8400-e29b-41d4-a716-446655440000",
+      name: "Example Flood",
+      type: "Flood",
+      startTime: "2024-02-01T00:00:00Z",
+      status: "Active",
+      createdAt: "2024-02-01T00:00:00Z"
+    },
+    {
+      locationId: "550e8400-e29b-41d4-a716-446655440001",
+      name: "Example Heatwave",
+      type: "Heatwave",
+      startTime: "2024-02-01T00:00:00Z",
+      status: "Active",
+      createdAt: "2024-02-01T00:00:00Z"
+    }
+  ])
+}
