@@ -372,117 +372,102 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
                   })}
                 </div>
 
-                {/* Population Distribution by Area */}
+                {/* Combined Population Impact Summary */}
                 <div className="mb-4">
                   <p className={`text-sm font-semibold mb-3 flex items-center gap-2 ${
                     darkMode ? 'text-gray-200' : 'text-gray-800'
                   }`}>
                     <Users className="w-4 h-4" />
-                    Area Population Distribution
+                    Total Population Impact
                   </p>
                   
-                  {analysis.location_specific_insights.map((insight, index) => {
-                    // Estimate area population based on location (more realistic)
-                    const getAreaPopulation = (locationName) => {
-                      const cityPopulations = {
-                        'lahore': 11126285,
-                        'karachi': 14910352,
-                        'islamabad': 1014825,
-                        'rawalpindi': 2098231,
-                        'faisalabad': 3203846,
-                        'multan': 1871843,
-                        'peshawar': 1970042,
-                        'quetta': 1001205
-                      };
-                      
-                      const normalizedName = locationName.toLowerCase();
-                      for (const [city, pop] of Object.entries(cityPopulations)) {
-                        if (normalizedName.includes(city)) {
-                          return pop;
-                        }
+                  {(() => {
+                    // Calculate total affected population across all locations
+                    let totalAffected = 0;
+                    
+                    analysis.location_specific_insights.forEach((insight) => {
+                      const affectedPop = parseFloat(insight.affected_population?.toString().match(/[\d.]+/)?.[0] || 0);
+                      const affectedMultiplier = insight.affected_population?.toLowerCase().includes('million') ? 1000000 :
+                                                insight.affected_population?.toLowerCase().includes('thousand') ? 1000 : 1;
+                      totalAffected += affectedPop * affectedMultiplier;
+                    });
+
+                    // Format the number nicely
+                    const formatPopulation = (num) => {
+                      if (num >= 1000000) {
+                        return `${(num / 1000000).toFixed(2)}M`;
+                      } else if (num >= 1000) {
+                        return `${(num / 1000).toFixed(0)}K`;
                       }
-                      return 1000000; // Default 1 million
+                      return num.toString();
                     };
 
-                    const totalPop = getAreaPopulation(insight.location);
-                    const affectedPop = parseFloat(insight.affected_population?.toString().match(/[\d.]+/)?.[0] || 0);
-                    const affectedMultiplier = insight.affected_population?.toLowerCase().includes('million') ? 1000000 :
-                                              insight.affected_population?.toLowerCase().includes('thousand') ? 1000 : 1;
-                    const affected = affectedPop * affectedMultiplier;
-                    
-                    const affectedPercentage = totalPop > 0 ? Math.min(100, (affected / totalPop) * 100) : 0;
+                    // Determine highest risk level across locations
+                    const riskLevels = ['critical', 'high', 'medium', 'low'];
+                    let highestRisk = 'low';
+                    analysis.location_specific_insights.forEach((insight) => {
+                      const currentRiskIndex = riskLevels.indexOf(insight.risk_level?.toLowerCase() || 'low');
+                      const highestRiskIndex = riskLevels.indexOf(highestRisk);
+                      if (currentRiskIndex < highestRiskIndex) {
+                        highestRisk = insight.risk_level?.toLowerCase() || 'low';
+                      }
+                    });
 
                     return (
-                      <div key={index} className="mb-4 last:mb-0">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className={`text-sm font-semibold ${
-                            darkMode ? 'text-gray-200' : 'text-gray-800'
+                      <div className={`p-4 rounded-lg border-2 ${
+                        highestRisk === 'critical' ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800' :
+                        highestRisk === 'high' ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-800' :
+                        highestRisk === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800' :
+                        'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-800'
+                      }`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className={`text-xs font-medium ${
+                              darkMode ? 'text-gray-400' : 'text-gray-600'
+                            }`}>
+                              Total Population Affected
+                            </p>
+                            <p className={`text-4xl font-bold mt-1 ${
+                              highestRisk === 'critical' ? 'text-red-600 dark:text-red-400' :
+                              highestRisk === 'high' ? 'text-orange-600 dark:text-orange-400' :
+                              highestRisk === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
+                              'text-green-600 dark:text-green-400'
+                            }`}>
+                              {formatPopulation(totalAffected)}
+                            </p>
+                          </div>
+                          <div className={`px-4 py-2 rounded-lg ${
+                            highestRisk === 'critical' ? 'bg-red-200 dark:bg-red-900/50' :
+                            highestRisk === 'high' ? 'bg-orange-200 dark:bg-orange-900/50' :
+                            highestRisk === 'medium' ? 'bg-yellow-200 dark:bg-yellow-900/50' :
+                            'bg-green-200 dark:bg-green-900/50'
                           }`}>
-                            {insight.location}
-                          </span>
-                          <span className={`text-xs font-medium ${
-                            darkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            Total: {(totalPop / 1000000).toFixed(1)}M
-                          </span>
-                        </div>
-                        
-                        {/* Total Population Bar */}
-                        <div className="mb-2">
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: '100%' }}
-                              transition={{ duration: 1, delay: 0.5 + index * 0.2 }}
-                              className="h-6 bg-blue-400 dark:bg-blue-500 rounded-full"
-                            />
-                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
-                              Total Population
-                            </span>
+                            <p className={`text-xs font-medium ${
+                              darkMode ? 'text-gray-300' : 'text-gray-700'
+                            }`}>
+                              Highest Risk
+                            </p>
+                            <p className={`text-lg font-bold uppercase ${
+                              highestRisk === 'critical' ? 'text-red-700 dark:text-red-300' :
+                              highestRisk === 'high' ? 'text-orange-700 dark:text-orange-300' :
+                              highestRisk === 'medium' ? 'text-yellow-700 dark:text-yellow-300' :
+                              'text-green-700 dark:text-green-300'
+                            }`}>
+                              {highestRisk}
+                            </p>
                           </div>
                         </div>
                         
-                        {/* Affected Population Overlay */}
-                        {affected > 0 && (
-                          <div className="mb-2">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className={`text-xs ${
-                                darkMode ? 'text-gray-400' : 'text-gray-600'
-                              }`}>
-                                At Risk
-                              </span>
-                              <span className={`text-xs font-bold ${
-                                darkMode ? 'text-gray-200' : 'text-gray-800'
-                              }`}>
-                                {insight.affected_population} ({affectedPercentage.toFixed(1)}%)
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${affectedPercentage}%` }}
-                                transition={{ duration: 1.2, delay: 0.7 + index * 0.2 }}
-                                className={`h-4 rounded-full ${
-                                  insight.risk_level?.toLowerCase() === 'critical' ? 'bg-red-500' :
-                                  insight.risk_level?.toLowerCase() === 'high' ? 'bg-orange-500' :
-                                  insight.risk_level?.toLowerCase() === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                                }`}
-                              />
-                              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-800">
-                                {affectedPercentage.toFixed(1)}% Affected
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        
-                        <p className={`text-xs ${
+                        <div className={`text-xs ${
                           darkMode ? 'text-gray-400' : 'text-gray-600'
                         }`}>
-                          Risk Level: {insight.risk_level} • {insight.current_status}
-                        </p>
+                          <p>Across {analysis.location_specific_insights.length} location(s): {
+                            analysis.location_specific_insights.map(i => i.location).join(', ')
+                          }</p>
+                        </div>
                       </div>
                     );
-                  })}
+                  })()}
                 </div>
 
                 {/* Combined Concerns */}
