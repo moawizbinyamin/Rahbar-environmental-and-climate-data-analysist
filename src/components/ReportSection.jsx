@@ -15,6 +15,7 @@ import {
   BarChart3,
   Activity
 } from 'lucide-react';
+import CaseSpecificReport from './CaseSpecificReport';
 
 const ReportSection = ({ analysisData, darkMode = false }) => {
   if (!analysisData || !analysisData.analysis) {
@@ -334,6 +335,9 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
               </div>
             </motion.div>
           )}
+
+          {/* Case-Specific Metrics */}
+          <CaseSpecificReport analysisData={analysisData} darkMode={darkMode} />
 
           {/* Summarized Location Analysis Card */}
           {analysis.location_specific_insights && analysis.location_specific_insights.length > 0 && (

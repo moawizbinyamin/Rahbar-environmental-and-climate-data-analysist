@@ -26,12 +26,21 @@ export class CoreLLMService {
 
     const prompt = `You are Rahbar, an advanced climate intelligence AI. Your job is to deeply understand user queries about environmental and climate issues.
 
-Analyze this query and extract ALL relevant information:
-"${userQuery}"
+As a climate and disaster expert, analyze this query and determine if it falls into one of these FOUR specific cases:
+1. FLOOD ANALYSIS - Water disasters, flooding, drainage, inundation
+2. URBAN EXPANSION - City growth, development, infrastructure expansion  
+3. DEFORESTATION/GREEN LOSS - Forest loss, vegetation decline, ecosystem degradation
+4. AIR POLLUTION - Air quality, smog, emissions, atmospheric contamination
 
-Provide a comprehensive analysis in this exact JSON format:
+Query: "${userQuery}"
+
+IMPORTANT: If the query is NOT related to these 4 cases (e.g., asking about recipes, sports, general chat), set is_relevant to false.
+
+Provide analysis in this exact JSON format:
 {
-  "query_type": "flood_analysis|deforestation|urban_expansion|green_coverage|general_climate|weather|disaster_risk",
+  "is_relevant": true|false,
+  "relevance_explanation": "Why this query is or isn't relevant to climate/disaster analysis",
+  "query_type": "flood_analysis|urban_expansion|deforestation|air_pollution|irrelevant",
   "primary_intent": "Brief description of what user wants to know",
   "locations": [
     {
@@ -45,7 +54,8 @@ Provide a comprehensive analysis in this exact JSON format:
   "time_scope": "current|historical|future|specific_period",
   "urgency_level": "low|medium|high|critical",
   "expected_output": ["map_visualization", "risk_assessment", "statistics", "recommendations"],
-  "specific_questions": ["extracted specific questions from query"]
+  "specific_questions": ["extracted specific questions from query"],
+  "fallback_suggestion": "If irrelevant, suggest a relevant question user could ask instead"
 }
 
 Be precise with location names. Extract all mentioned or implied locations. If the query is vague, suggest the most relevant locations.
@@ -377,12 +387,23 @@ Respond ONLY with valid JSON.`;
   getMockQueryInterpretation(userQuery) {
     const query = userQuery.toLowerCase();
     
-    // Determine query type
-    let queryType = 'general_climate';
-    if (query.includes('flood')) queryType = 'flood_analysis';
-    else if (query.includes('deforest') || query.includes('forest')) queryType = 'deforestation';
-    else if (query.includes('urban') || query.includes('expansion')) queryType = 'urban_expansion';
-    else if (query.includes('green') || query.includes('vegetation')) queryType = 'green_coverage';
+    // Check relevance first
+    const relevantKeywords = ['flood', 'deforest', 'forest', 'urban', 'expansion', 'green', 'vegetation', 'air', 'pollution', 'quality', 'smog', 'aqi', 'climate', 'disaster', 'environment'];
+    const isRelevant = relevantKeywords.some(keyword => query.includes(keyword));
+    
+    // Determine query type for our 4 supported cases
+    let queryType = 'irrelevant';
+    if (query.includes('flood') || query.includes('water') || query.includes('inundation')) {
+      queryType = 'flood_analysis';
+    } else if (query.includes('urban') || query.includes('expansion') || query.includes('development')) {
+      queryType = 'urban_expansion';
+    } else if (query.includes('deforest') || query.includes('forest') || query.includes('green') || query.includes('vegetation') || query.includes('tree')) {
+      queryType = 'deforestation';
+    } else if (query.includes('air') || query.includes('pollution') || query.includes('quality') || query.includes('smog') || query.includes('aqi') || query.includes('pm')) {
+      queryType = 'air_pollution';
+    } else if (!isRelevant) {
+      queryType = 'irrelevant';
+    }
     
     // Extract locations
     const locations = [];
@@ -409,14 +430,17 @@ Respond ONLY with valid JSON.`;
     }
 
     return {
+      is_relevant: isRelevant && queryType !== 'irrelevant',
+      relevance_explanation: isRelevant ? `This is a valid ${queryType} query` : "This query is not related to climate or disaster analysis",
       query_type: queryType,
-      primary_intent: `Analyze ${queryType.replace('_', ' ')} for ${locations[0].name}`,
-      locations: locations,
-      analysis_required: [queryType, 'risk_assessment', 'map_visualization'],
+      primary_intent: queryType !== 'irrelevant' ? `Analyze ${queryType.replace('_', ' ')} for ${locations[0].name}` : "Query not related to supported analysis types",
+      locations: queryType !== 'irrelevant' ? locations : [],
+      analysis_required: queryType !== 'irrelevant' ? [queryType, 'risk_assessment', 'map_visualization'] : [],
       time_scope: 'current',
       urgency_level: query.includes('urgent') ? 'high' : 'medium',
-      expected_output: ['map_visualization', 'risk_assessment', 'statistics', 'recommendations'],
-      specific_questions: [userQuery]
+      expected_output: queryType !== 'irrelevant' ? ['map_visualization', 'risk_assessment', 'statistics', 'recommendations'] : [],
+      specific_questions: [userQuery],
+      fallback_suggestion: queryType === 'irrelevant' ? "Try asking about flood risks, urban expansion, deforestation, or air pollution in specific locations." : null
     };
   }
 
@@ -539,8 +563,16 @@ Respond ONLY with valid JSON.`;
     console.log('🚀 Starting LLM-driven analysis pipeline...');
     
     try {
-      // Step 1: Understand the query
+      // Step 1: Understand and validate the query
       const queryInterpretation = await this.interpretQuery(userQuery);
+      
+      // Check if query is relevant to our 4 supported cases
+      if (!queryInterpretation.is_relevant || queryInterpretation.query_type === 'irrelevant') {
+        console.log('⚠️ Query is not relevant to climate/disaster analysis');
+        return this.generateFallbackResponse(queryInterpretation, userQuery);
+      }
+      
+      console.log(`✅ Valid ${queryInterpretation.query_type} query detected`);
       
       // Step 2: Identify exact locations and coordinates
       const locationData = await this.identifyLocationsWithCoordinates(queryInterpretation, userQuery);
@@ -558,7 +590,8 @@ Respond ONLY with valid JSON.`;
         analysis,
         mapVisualization,
         timestamp: new Date().toISOString(),
-        processingTime: Date.now()
+        processingTime: Date.now(),
+        isRelevant: true
       };
       
       console.log('✅ LLM-driven analysis complete!');
@@ -568,6 +601,26 @@ Respond ONLY with valid JSON.`;
       console.error('❌ LLM pipeline error:', error);
       throw error;
     }
+  }
+
+  // Generate fallback response for irrelevant queries
+  generateFallbackResponse(queryInterpretation, userQuery) {
+    return {
+      queryInterpretation,
+      isRelevant: false,
+      fallbackMessage: {
+        title: "I'm a Climate & Disaster Intelligence Assistant",
+        message: queryInterpretation.relevance_explanation || "I specialize in environmental and climate analysis only.",
+        suggestion: queryInterpretation.fallback_suggestion || "Try asking about flood risks, urban expansion, deforestation, or air pollution in specific locations.",
+        examples: [
+          "What are the flood risks in Lahore?",
+          "Show urban expansion in Karachi over the last 5 years",
+          "Analyze deforestation in northern Pakistan",
+          "What's the air quality in Islamabad?"
+        ]
+      },
+      timestamp: new Date().toISOString()
+    };
   }
 }
 

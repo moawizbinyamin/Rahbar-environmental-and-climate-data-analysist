@@ -50,11 +50,38 @@ const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false
     await addChatMessage(userMsg);
 
     try {
-      // 🚀 NEW LLM-DRIVEN PIPELINE - LLM is the core intelligence engine
+      // 🚀 LLM-DRIVEN PIPELINE with Relevance Validation
       console.log('🧠 Starting LLM-centric analysis...');
       
-      // LLM handles EVERYTHING: query understanding, location identification, analysis, and visualization guidance
+      // LLM validates query and processes if relevant
       const llmResponse = await coreLLMService.processUserQuery(userMessage);
+      
+      // Handle irrelevant queries with fallback
+      if (!llmResponse.isRelevant) {
+        console.log('⚠️ Irrelevant query detected - providing guidance');
+        
+        const fallbackMsg = {
+          role: 'assistant',
+          message: llmResponse.fallbackMessage.message,
+          timestamp: new Date(),
+          isFallback: true,
+          fallbackData: llmResponse.fallbackMessage
+        };
+        setMessages(prev => [...prev, fallbackMsg]);
+        
+        // Add helpful suggestions
+        const suggestionMsg = {
+          role: 'system',
+          message: `💡 Try asking: "${llmResponse.fallbackMessage.examples[0]}"`,
+          timestamp: new Date(),
+          suggestions: llmResponse.fallbackMessage.examples
+        };
+        setMessages(prev => [...prev, suggestionMsg]);
+        
+        console.log('✅ Fallback response provided');
+        setIsProcessing(false);
+        return;
+      }
       
       // Add system message showing LLM's understanding
       const intentMsg = {
@@ -228,6 +255,34 @@ const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false
                 }`}>
                   <p className="text-sm leading-relaxed">{msg.message}</p>
                 
+                  {/* Fallback suggestions for irrelevant queries */}
+                  {msg.isFallback && msg.fallbackData && (
+                    <div className={`mt-3 pt-3 border-t ${
+                      darkMode ? 'border-gray-600' : 'border-gray-300'
+                    }`}>
+                      <p className={`text-xs font-semibold mb-2 ${
+                        darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        💡 Try asking about:
+                      </p>
+                      <div className="space-y-1">
+                        {msg.fallbackData.examples.slice(0, 3).map((example, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setInputValue(example)}
+                            className={`w-full text-left text-xs p-2 rounded-lg transition-colors ${
+                              darkMode 
+                                ? 'bg-gray-600 hover:bg-gray-500 text-gray-200' 
+                                : 'bg-white hover:bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            "{example}"
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {msg.insights && (
                     <div className={`mt-2 pt-2 border-t ${
                       msg.role === 'user' 
