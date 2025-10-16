@@ -338,14 +338,15 @@ const ReportSection = ({ analysisData, darkMode = false }) => {
                       totalAffected += affectedPop * affectedMultiplier;
                     });
 
-                    // Format the number nicely
+                    // Format the number nicely with proper K/M suffix
                     const formatPopulation = (num) => {
                       if (num >= 1000000) {
                         return `${(num / 1000000).toFixed(2)}M`;
                       } else if (num >= 1000) {
-                        return `${(num / 1000).toFixed(0)}K`;
+                        const thousands = (num / 1000).toFixed(0);
+                        return `${thousands}K`;
                       }
-                      return num.toString();
+                      return `${num}`;
                     };
 
                     // Determine highest risk level across locations
