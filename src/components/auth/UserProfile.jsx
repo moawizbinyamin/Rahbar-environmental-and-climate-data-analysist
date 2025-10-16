@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Mail, Calendar, Settings, LogOut, Save, Edit3, Globe, Bell, Moon, Sun } from 'lucide-react';
+import RahbarLogo from '../RahbarLogo';
 import { useAuth } from '../../contexts/AuthContext';
 
 const UserProfile = ({ onClose }) => {
@@ -217,7 +218,7 @@ const UserProfile = ({ onClose }) => {
           {userProfile?.analytics && (
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Globe className="w-5 h-5" />
+                <RahbarLogo size="small" showText={false} />
                 Usage Statistics
               </h3>
               

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Loader2, CheckCircle, Globe, ArrowLeft } from 'lucide-react';
+import RahbarLogo from '../components/RahbarLogo';
 import { useAuth } from '../contexts/AuthContext';
 
 const SignupPage = () => {
@@ -111,11 +112,8 @@ const SignupPage = () => {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-earth-500 rounded-full flex items-center justify-center">
-                <Globe className="w-7 h-7 text-white" />
-              </div>
-              <span className="text-3xl font-bold text-gray-800">Rahbar</span>
+            <div className="inline-flex items-center justify-center mb-4">
+              <RahbarLogo size="large" showText={true} textStyle="solid" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
             <p className="text-gray-600">Join Rahbar to access climate intelligence</p>

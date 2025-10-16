@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Globe, Brain, Map, BarChart3, Menu, X, Sun, Moon, Settings, Bell, Search, Wifi, WifiOff, LogOut, User } from 'lucide-react';
+import RahbarLogo from '../components/RahbarLogo';
 import { useAuth } from '../contexts/AuthContext';
 import WelcomeSection from '../components/WelcomeSection';
 import AnalysisSection from '../components/AnalysisSection';
@@ -109,23 +110,22 @@ const Dashboard = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <motion.div 
-                className="w-10 h-10 bg-gradient-to-r from-earth-500 to-sky-500 rounded-xl flex items-center justify-center shadow-lg"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Globe className="w-6 h-6 text-white" />
-              </motion.div>
-              <div>
-                <h1 className={`text-2xl font-bold transition-colors duration-300 ${
-                  darkMode ? 'text-white' : 'text-gray-800'
-                }`}>Rahbar</h1>
-                <p className={`text-sm transition-colors duration-300 ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>Climate Intelligence Console</p>
-              </div>
-            </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="cursor-pointer"
+              onClick={() => navigate('/')}
+            >
+              <RahbarLogo 
+                size="default" 
+                showText={true} 
+                textStyle="solid"
+                className="gap-2"
+              />
+              <p className={`text-sm transition-colors duration-300 ml-14 ${
+                darkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>Climate Intelligence Console</p>
+            </motion.div>
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-6">

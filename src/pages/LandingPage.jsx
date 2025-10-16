@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Globe, Brain, Map, BarChart3, AlertTriangle, Leaf, Cloud, ArrowRight, CheckCircle, Users, Shield, Zap, LayoutDashboard } from 'lucide-react';
+import RahbarLogo from '../components/RahbarLogo';
 import { useAuth } from '../contexts/AuthContext';
 
 const LandingPage = () => {
@@ -58,12 +59,7 @@ const LandingPage = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-earth-500 rounded-full flex items-center justify-center">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-800">Rahbar</span>
-            </div>
+            <RahbarLogo size="default" showText={true} textStyle="solid" />
             <div className="flex items-center gap-4">
               {currentUser ? (
                 // Logged in - show Dashboard button
@@ -585,9 +581,8 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Globe className="w-8 h-8 text-earth-400" />
-                <span className="text-xl font-bold">Rahbar</span>
+              <div className="mb-4">
+                <RahbarLogo size="default" showText={true} textStyle="solid" />
               </div>
               <p className="text-gray-400">
                 Climate Intelligence Platform powered by AI
