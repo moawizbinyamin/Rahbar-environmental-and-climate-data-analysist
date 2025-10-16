@@ -200,61 +200,208 @@ const LandingPage = () => {
               </div>
             </motion.div>
 
-            {/* Hero Image/Demo */}
+            {/* Hero Image/Demo - Interactive Map Preview */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="mt-16 relative"
             >
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-4 max-w-4xl mx-auto border border-white/20">
-                <div className="bg-gradient-to-br from-earth-100 via-sky-50 to-green-100 rounded-lg h-96 flex items-center justify-center relative overflow-hidden">
-                  {/* Animated Globe */}
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 flex items-center justify-center"
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-4 max-w-5xl mx-auto border border-white/20">
+                {/* Dashboard Preview */}
+                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-lg h-[500px] flex relative overflow-hidden">
+                  {/* World Map SVG Background */}
+                  <svg 
+                    viewBox="0 0 1000 500" 
+                    className="absolute inset-0 w-full h-full opacity-30"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    <Globe className="w-64 h-64 text-earth-500/20" strokeWidth={0.5} />
-                  </motion.div>
+                    {/* Continents as simplified paths */}
+                    {/* Asia */}
+                    <motion.path
+                      d="M 600 150 Q 650 120, 700 140 Q 750 160, 780 180 Q 800 220, 760 260 Q 720 280, 680 250 Q 650 230, 620 200 Z"
+                      fill="currentColor"
+                      className="text-earth-400"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 0 }}
+                    />
+                    {/* Europe */}
+                    <motion.path
+                      d="M 450 120 Q 480 100, 520 110 Q 540 140, 520 160 Q 480 180, 450 160 Z"
+                      fill="currentColor"
+                      className="text-sky-400"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
+                    />
+                    {/* Africa */}
+                    <motion.path
+                      d="M 480 200 Q 520 190, 550 210 Q 560 260, 540 310 Q 500 350, 460 320 Q 450 260, 480 200 Z"
+                      fill="currentColor"
+                      className="text-green-400"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                    />
+                    {/* North America */}
+                    <motion.path
+                      d="M 150 100 Q 200 80, 250 100 Q 280 140, 260 180 Q 220 220, 180 200 Q 140 160, 150 100 Z"
+                      fill="currentColor"
+                      className="text-purple-400"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 1.5 }}
+                    />
+                    {/* South America */}
+                    <motion.path
+                      d="M 220 240 Q 260 230, 280 260 Q 290 310, 270 360 Q 240 400, 210 370 Q 200 310, 220 240 Z"
+                      fill="currentColor"
+                      className="text-yellow-400"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 2 }}
+                    />
+                    {/* Australia */}
+                    <motion.path
+                      d="M 750 340 Q 800 330, 840 350 Q 850 380, 820 400 Q 770 410, 740 380 Z"
+                      fill="currentColor"
+                      className="text-orange-400"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 2.5 }}
+                    />
+                  </svg>
                   
-                  {/* Central Content */}
-                  <div className="text-center relative z-10">
-                    <motion.div
-                      animate={{ 
-                        scale: [1, 1.1, 1],
-                        rotate: [0, 5, -5, 0]
-                      }}
-                      transition={{ 
-                        duration: 6, 
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <Globe className="w-32 h-32 text-earth-500 mx-auto mb-4" />
-                    </motion.div>
-                    <p className="text-gray-700 text-lg font-medium">Interactive Climate Dashboard</p>
-                    <p className="text-gray-500 text-sm mt-2">Real-time data • AI Analysis • Interactive Maps</p>
-                  </div>
-                  
-                  {/* Data Points */}
+                  {/* Pulsing Location Markers */}
                   {[
-                    { Icon: Cloud, label: 'Weather', color: 'text-sky-500', position: 'top-8 left-8' },
-                    { Icon: AlertTriangle, label: 'Risks', color: 'text-red-500', position: 'top-8 right-8' },
-                    { Icon: Leaf, label: 'Green', color: 'text-green-500', position: 'bottom-8 left-8' },
-                    { Icon: BarChart3, label: 'Analytics', color: 'text-purple-500', position: 'bottom-8 right-8' }
-                  ].map((item, index) => (
+                    { x: '65%', y: '35%', label: 'Lahore', risk: 'High', color: 'bg-red-500' },
+                    { x: '50%', y: '25%', label: 'London', risk: 'Low', color: 'bg-green-500' },
+                    { x: '20%', y: '30%', label: 'New York', risk: 'Medium', color: 'bg-yellow-500' },
+                    { x: '82%', y: '65%', label: 'Sydney', risk: 'Low', color: 'bg-green-500' },
+                    { x: '52%', y: '50%', label: 'Cairo', risk: 'Medium', color: 'bg-yellow-500' },
+                  ].map((location, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.5 + index * 0.2, duration: 0.5 }}
-                      className={`absolute ${item.position} bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg`}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 1 + index * 0.3, duration: 0.5 }}
+                      className="absolute"
+                      style={{ left: location.x, top: location.y }}
                     >
-                      <item.Icon className={`w-6 h-6 ${item.color} mb-1`} />
-                      <p className="text-xs font-medium text-gray-700">{item.label}</p>
+                      {/* Pulsing Ring */}
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 2, 1],
+                          opacity: [0.8, 0, 0.8]
+                        }}
+                        transition={{ 
+                          duration: 3, 
+                          repeat: Infinity,
+                          delay: index * 0.5 
+                        }}
+                        className={`absolute w-8 h-8 ${location.color} rounded-full -translate-x-1/2 -translate-y-1/2`}
+                      />
+                      {/* Marker Pin */}
+                      <motion.div
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
+                        className="relative"
+                      >
+                        <div className={`w-4 h-4 ${location.color} rounded-full shadow-lg -translate-x-1/2 -translate-y-1/2`} />
+                      </motion.div>
+                      {/* Location Label */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.5 + index * 0.3 }}
+                        className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg whitespace-nowrap"
+                      >
+                        <p className="text-xs font-semibold text-gray-800">{location.label}</p>
+                        <p className={`text-xs ${
+                          location.risk === 'High' ? 'text-red-600' :
+                          location.risk === 'Medium' ? 'text-yellow-600' :
+                          'text-green-600'
+                        }`}>
+                          {location.risk} Risk
+                        </p>
+                      </motion.div>
                     </motion.div>
                   ))}
+                  
+                  {/* Connecting Lines */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                    {[
+                      { x1: '65%', y1: '35%', x2: '50%', y2: '25%' },
+                      { x1: '50%', y1: '25%', x2: '20%', y2: '30%' },
+                      { x1: '65%', y1: '35%', x2: '52%', y2: '50%' },
+                    ].map((line, index) => (
+                      <motion.line
+                        key={index}
+                        x1={line.x1}
+                        y1={line.y1}
+                        x2={line.x2}
+                        y2={line.y2}
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        className="text-earth-400/30"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 0.5 }}
+                        transition={{ duration: 2, delay: 2 + index * 0.3 }}
+                      />
+                    ))}
+                  </svg>
+                  
+                  {/* Dashboard UI Elements */}
+                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1 }}
+                      className="bg-white/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg"
+                    >
+                      <p className="text-xs text-gray-500">Live Analysis</p>
+                      <p className="text-sm font-semibold text-gray-800">Climate Dashboard</p>
+                    </motion.div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.2 }}
+                      className="bg-white/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2"
+                    >
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <p className="text-xs font-medium text-gray-800">Live Data</p>
+                    </motion.div>
+                  </div>
+                  
+                  {/* Stats Panel */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.5 }}
+                    className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg"
+                  >
+                    <div className="grid grid-cols-4 gap-4">
+                      {[
+                        { label: 'Flood Risk', value: '23%', color: 'text-red-500' },
+                        { label: 'Green Cover', value: '45%', color: 'text-green-500' },
+                        { label: 'Urban Growth', value: '12%', color: 'text-blue-500' },
+                        { label: 'Air Quality', value: 'Good', color: 'text-purple-500' }
+                      ].map((stat, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 1.7 + i * 0.1 }}
+                          className="text-center"
+                        >
+                          <p className={`text-lg font-bold ${stat.color}`}>{stat.value}</p>
+                          <p className="text-xs text-gray-600">{stat.label}</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
                 </div>
               </div>
             </motion.div>

@@ -56,13 +56,13 @@ const SignupPage = () => {
       await signup(formData.email, formData.password, formData.displayName);
       navigate('/dashboard');
     } catch (error) {
-      setError(getErrorMessage(error.code));
+      setError(getErrorMessage(error.code, error));
     } finally {
       setLoading(false);
     }
   };
 
-  const getErrorMessage = (errorCode) => {
+  const getErrorMessage = (errorCode, errorObj) => {
     switch (errorCode) {
       case 'auth/email-already-in-use':
         return 'An account with this email already exists.';
@@ -71,9 +71,10 @@ const SignupPage = () => {
       case 'auth/weak-password':
         return 'Password is too weak. Please choose a stronger password.';
       case 'auth/operation-not-allowed':
-        return 'Email/password accounts are not enabled.';
+      case 'auth/not-enabled':
+        return 'Authentication is not enabled yet. Please contact the administrator or visit: https://console.firebase.google.com/project/rahbar-dcd4a/authentication to enable Email/Password sign-in.';
       default:
-        return 'Failed to create account. Please try again.';
+        return errorObj?.message || 'Failed to create account. Please try again.';
     }
   };
 

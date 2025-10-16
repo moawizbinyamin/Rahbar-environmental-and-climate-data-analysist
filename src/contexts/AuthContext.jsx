@@ -57,6 +57,13 @@ export const AuthProvider = ({ children }) => {
       
       return userCredential;
     } catch (error) {
+      // Enhanced error handling with better messages
+      if (error.code === 'auth/operation-not-allowed') {
+        const enhancedError = new Error('Firebase Authentication is not enabled. Please enable Email/Password authentication in Firebase Console.');
+        enhancedError.code = 'auth/not-enabled';
+        enhancedError.instructions = 'Visit https://console.firebase.google.com/project/rahbar-dcd4a/authentication to enable Email/Password sign-in.';
+        throw enhancedError;
+      }
       throw error;
     }
   };
