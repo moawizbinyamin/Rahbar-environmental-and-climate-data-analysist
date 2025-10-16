@@ -2,9 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Mic, MicOff, Send, MapPin, AlertTriangle, CheckCircle, Paperclip, Smile, MoreVertical, Bot, User, Loader2, ChevronLeft, ChevronRight, MessageSquare, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirestore } from '../hooks/useFirestore';
-import { llmService } from '../services/llmService';
-import { alphaEarthService } from '../services/alphaEarthService';
-import { climateAnalysisService } from '../services/climateAnalysisService';
+import { coreLLMService } from '../services/coreLLMService';
 
 const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false, collapsed = false, onToggleCollapse }) => {
   const [messages, setMessages] = useState([]);
@@ -77,94 +75,66 @@ const ChatInterface = ({ onAnalysisComplete, onProcessingStart, darkMode = false
     await addChatMessage(userMsg);
 
     try {
-      // Step 1: Interpret user intent
-      const intent = await llmService.interpretUserIntent(userMessage);
+      // 🚀 NEW LLM-DRIVEN PIPELINE - LLM is the core intelligence engine
+      console.log('🧠 Starting LLM-centric analysis...');
       
-      // Add system message showing intent interpretation
+      // LLM handles EVERYTHING: query understanding, location identification, analysis, and visualization guidance
+      const llmResponse = await coreLLMService.processUserQuery(userMessage);
+      
+      // Add system message showing LLM's understanding
       const intentMsg = {
         role: 'system',
-        message: `Analyzing: ${intent.query_summary} for ${intent.location}`,
+        message: `Analyzing: ${llmResponse.queryInterpretation.primary_intent}`,
         timestamp: new Date(),
-        intent: intent
+        interpretation: llmResponse.queryInterpretation
       };
       setMessages(prev => [...prev, intentMsg]);
 
-      // Step 2: Fetch AlphaEarth data
-      const alphaEarthData = await alphaEarthService.fetchData(
-        intent.intent,
-        intent.location,
-        intent.time_period
-      );
-
-      // Step 3: Get Real Climate Analysis for specialized climate modeling
-      let climateAnalysis = null;
-      if (intent.disaster_type === 'flood') {
-        climateAnalysis = await climateAnalysisService.analyzeFloodRisk(
-          intent.location,
-          intent.time_period
-        );
-      } else if (intent.disaster_type === 'urban_expansion') {
-        climateAnalysis = await climateAnalysisService.analyzeUrbanExpansion(
-          intent.location,
-          intent.time_period
-        );
-      } else if (intent.disaster_type === 'green_expansion') {
-        climateAnalysis = await climateAnalysisService.analyzeGreenExpansion(
-          intent.location,
-          intent.time_period
-        );
-      }
-
-      // Step 4: Generate insights with Real Climate Analysis and geospatial data
-      const insights = await llmService.generateInsight(
-        alphaEarthData,
-        userMessage,
-        climateAnalysis
-      );
-
-      // Step 5: Save analysis to Firestore
+      // Prepare comprehensive analysis data
       const analysisData = {
-        intent: intent.intent,
-        location: intent.location,
-        time_period: intent.time_period || 'current',
         userMessage: userMessage,
-        alphaEarthData: alphaEarthData,
-        climateAnalysis: climateAnalysis,
-        llmSummary: insights,
-        confidence: intent.confidence,
-        disaster_type: intent.disaster_type,
-        urgency: intent.urgency
+        queryType: llmResponse.queryInterpretation.query_type,
+        locations: llmResponse.locationData.locations,
+        analysis: llmResponse.analysis,
+        mapVisualization: llmResponse.mapVisualization,
+        timestamp: llmResponse.timestamp,
+        urgency: llmResponse.queryInterpretation.urgency_level,
+        expectedOutput: llmResponse.queryInterpretation.expected_output
       };
       
-      // Step 5: Save analysis to Firestore (optional, won't break if it fails)
+      // Save analysis to Firestore (optional)
       try {
         await addAnalysis(analysisData);
       } catch (error) {
         console.log('Analysis saved locally (Firestore unavailable)');
       }
 
-      // Step 6: Add assistant response
+      // Add assistant response with comprehensive insights
       const assistantMsg = {
         role: 'assistant',
-        message: insights.summary,
+        message: llmResponse.analysis.executive_summary,
         timestamp: new Date(),
-        insights: insights,
-        analysisData: analysisData
+        fullAnalysis: llmResponse.analysis,
+        analysisData: analysisData,
+        locations: llmResponse.locationData.locations
       };
       setMessages(prev => [...prev, assistantMsg]);
       
-      // Save chat message (optional, won't break if it fails)
+      // Save chat message (optional)
       try {
         await addChatMessage(assistantMsg);
       } catch (error) {
         console.log('Chat message saved locally (Firestore unavailable)');
       }
 
-      // Notify parent component
-      onAnalysisComplete(analysisData);
-
+      // Notify parent component with LLM-generated analysis and map data
+      if (onAnalysisComplete) {
+        onAnalysisComplete(analysisData);
+      }
+      
+      console.log('✅ LLM-driven analysis complete!');
     } catch (error) {
-      console.error('Error processing message:', error);
+      console.error('❌ Error processing message:', error);
       const errorMsg = {
         role: 'assistant',
         message: 'Sorry, I encountered an error processing your request. Please try again.',

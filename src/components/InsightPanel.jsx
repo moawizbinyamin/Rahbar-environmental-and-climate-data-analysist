@@ -81,7 +81,7 @@ const InsightPanel = ({ analysisData, isLoading }) => {
         <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4" />
-            {analysisData.location}
+            {analysisData.locations?.[0]?.name || analysisData.location || 'Unknown Location'}
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-4 h-4" />

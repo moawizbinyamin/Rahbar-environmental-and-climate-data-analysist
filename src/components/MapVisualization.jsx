@@ -32,40 +32,75 @@ const MapVisualization = ({ analysisData, isLoading }) => {
   const [showAreas, setShowAreas] = useState(true);
 
   useEffect(() => {
-    if (analysisData) {
-      // Update map center based on location
-      const location = analysisData.location;
-      let center = [31.5204, 74.3587]; // Default to Lahore
+    if (analysisData && analysisData.mapVisualization) {
+      console.log('🗺️ Rendering LLM-generated map visualization...');
       
-      // Simple location mapping (in production, use geocoding service)
-      const locationMap = {
-        'lahore': [31.5204, 74.3587],
-        'karachi': [24.8607, 67.0011],
-        'islamabad': [33.6844, 73.0479],
-        'multan': [30.1575, 71.5249],
-        'peshawar': [34.0151, 71.5249],
-        'quetta': [30.1798, 66.9750],
-        'faisalabad': [31.4504, 73.1350],
-        'rawalpindi': [33.5651, 73.0169]
-      };
+      // Use LLM-provided map center and zoom
+      const mapViz = analysisData.mapVisualization;
       
-      const normalizedLocation = location.toLowerCase();
-      if (locationMap[normalizedLocation]) {
-        center = locationMap[normalizedLocation];
+      if (mapViz.center) {
+        setMapCenter([mapViz.center.lat, mapViz.center.lon]);
+        setMapZoom(mapViz.zoom || 10);
       }
       
-      setMapCenter(center);
-      setMapZoom(12);
-      
-      // Create markers based on analysis data
-      const newMarkers = generateMarkers(analysisData, center);
+      // Generate markers from LLM-identified locations
+      const newMarkers = generateMarkersFromLLM(mapViz);
       setMarkers(newMarkers);
       
-      // Generate GeoJSON data for areas
-      const geoData = generateGeoJsonData(analysisData, center);
+      // Generate GeoJSON polygons from LLM-identified areas
+      const geoData = generateGeoJsonFromLLM(mapViz);
       setGeoJsonData(geoData);
+      
+      console.log('✅ Map updated with LLM-generated data');
     }
   }, [analysisData]);
+
+  // Generate markers from LLM-provided location data
+  const generateMarkersFromLLM = (mapViz) => {
+    const markers = [];
+    
+    if (mapViz.markers && mapViz.markers.length > 0) {
+      mapViz.markers.forEach(marker => {
+        markers.push({
+          position: marker.position,
+          type: marker.type,
+          title: marker.name,
+          riskLevel: marker.riskLevel,
+          populationAffected: marker.populationAffected,
+          reason: marker.reason,
+          data: marker
+        });
+      });
+    }
+    
+    return markers;
+  };
+
+  // Generate GeoJSON from LLM-provided polygon data
+  const generateGeoJsonFromLLM = (mapViz) => {
+    if (!mapViz.polygons || mapViz.polygons.length === 0) {
+      return null;
+    }
+
+    const features = mapViz.polygons.map(polygon => ({
+      type: 'Feature',
+      properties: {
+        name: polygon.name,
+        riskLevel: polygon.riskLevel,
+        color: polygon.color,
+        fillOpacity: polygon.fillOpacity || 0.4
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [polygon.positions.map(pos => [pos[1], pos[0]])] // [lon, lat] for GeoJSON
+      }
+    }));
+
+    return {
+      type: 'FeatureCollection',
+      features: features
+    };
+  };
 
   const generateMarkers = (data, center) => {
     const markers = [];
