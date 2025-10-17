@@ -116,15 +116,27 @@ const Dashboard = () => {
               className="cursor-pointer"
               onClick={() => navigate('/')}
             >
-              <RahbarLogo 
-                size="default" 
-                showText={true} 
-                textStyle="solid"
-                className="gap-2"
-              />
-              <p className={`text-sm transition-colors duration-300 ml-14 ${
-                darkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>Climate Intelligence Console</p>
+              <div className="flex items-center gap-4">
+                {/* Logo Image - Fixed size */}
+                <div className="w-12 h-12 flex-shrink-0">
+                  <RahbarLogo 
+                    size="default" 
+                    showText={false} 
+                    textStyle="solid"
+                  />
+                </div>
+                {/* Text Content - Matches logo height */}
+                <div className="h-12 flex flex-col justify-center">
+                  <span className={`text-2xl font-orbitron font-black tracking-wider text-gray-800 dark:text-white transition-colors duration-300 uppercase leading-none`}>
+                    RAHBAR
+                  </span>
+                  <span className={`text-xs font-orbitron font-medium tracking-wider transition-colors duration-300 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    CLIMATE AI
+                  </span>
+                </div>
+              </div>
             </motion.div>
             
             {/* Desktop Navigation */}
