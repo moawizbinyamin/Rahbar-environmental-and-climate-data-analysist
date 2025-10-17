@@ -76,8 +76,24 @@ const LoginPage = () => {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center mb-4">
-              <RahbarLogo size="large" showText={true} textStyle="solid" />
+            <div className="inline-flex items-center justify-center mb-4 gap-4">
+              {/* Logo Image - Fixed size */}
+              <div className="w-16 h-16 flex-shrink-0">
+                <RahbarLogo 
+                  size="large" 
+                  showText={false} 
+                  textStyle="solid"
+                />
+              </div>
+              {/* Text Content - Matches logo height */}
+              <div className="h-16 flex flex-col justify-center">
+                <span className="text-3xl font-orbitron font-black tracking-wider text-gray-800 uppercase leading-none">
+                  RAHBAR
+                </span>
+                <span className="text-sm font-orbitron font-medium tracking-wider text-gray-600">
+                  CLIMATE AI
+                </span>
+              </div>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
             <p className="text-gray-600">Sign in to your account to continue</p>

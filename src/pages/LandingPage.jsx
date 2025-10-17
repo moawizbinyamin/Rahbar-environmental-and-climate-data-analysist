@@ -59,7 +59,25 @@ const LandingPage = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <RahbarLogo size="default" showText={true} textStyle="solid" />
+            <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate('/')}>
+              {/* Logo Image - Fixed size */}
+              <div className="w-12 h-12 flex-shrink-0">
+                <RahbarLogo 
+                  size="default" 
+                  showText={false} 
+                  textStyle="solid"
+                />
+              </div>
+              {/* Text Content - Matches logo height */}
+              <div className="h-12 flex flex-col justify-center">
+                <span className="text-2xl font-orbitron font-black tracking-wider text-gray-800 uppercase leading-none">
+                  RAHBAR
+                </span>
+                <span className="text-xs font-orbitron font-medium tracking-wider text-gray-600">
+                  CLIMATE AI
+                </span>
+              </div>
+            </div>
             <div className="flex items-center gap-4">
               {currentUser ? (
                 // Logged in - show Dashboard button
